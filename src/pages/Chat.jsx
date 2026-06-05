@@ -234,6 +234,7 @@ const Chat = () => {
                 <div>
                   <strong>{conversaAtiva.nome}</strong>
                   <span>{conversaAtiva.ferramenta}</span>
+                  <em className="chatConvStatus">Em Andamento</em>
                 </div>
               </div>
             ) : null}
@@ -245,7 +246,9 @@ const Chat = () => {
               aria-label="Denunciar"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M5 4v16M5 4l9 4-9 4" />
+                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
               </svg>
             </button>
           </header>
@@ -266,25 +269,27 @@ const Chat = () => {
 
           {/* Input de mensagem */}
           <footer className="chatInputBar">
-            <input
-              type="text"
-              className="chatInput"
-              placeholder="Digite uma mensagem..."
-              value={mensagemRascunho}
-              onChange={(evento) => setMensagemRascunho(evento.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-            <button
-              type="button"
-              className="chatSendBtn"
-              onClick={handleSend}
-              disabled={!mensagemRascunho.trim()}
-              aria-label="Enviar mensagem"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />
-              </svg>
-            </button>
+            <div className="chatInputBarInner">
+              <input
+                type="text"
+                className="chatInput"
+                placeholder="Digite uma mensagem..."
+                value={mensagemRascunho}
+                onChange={(evento) => setMensagemRascunho(evento.target.value)}
+                onKeyDown={handleKeyDown}
+              />
+              <button
+                type="button"
+                className="chatSendBtn"
+                onClick={handleSend}
+                disabled={!mensagemRascunho.trim()}
+                aria-label="Enviar mensagem"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />
+                </svg>
+              </button>
+            </div>
           </footer>
         </main>
       </div>

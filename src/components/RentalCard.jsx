@@ -4,6 +4,7 @@ import "./RentalCard.css";
 const configuracaoStatus = {
   concluido: { rotulo: "Concluido", semantica: "success" },
   aprovado: { rotulo: "Aprovado", semantica: "success" },
+  confirmado: { rotulo: "Confirmado", semantica: "warning" },
   analise: { rotulo: "Em Analise", semantica: "warning" },
   andamento: { rotulo: "Em Andamento", semantica: "warning" },
   pausado: { rotulo: "Pausado", semantica: "neutral" },
@@ -30,7 +31,7 @@ const CardAluguel = ({
         style={imagem ? { backgroundImage: `url(${imagem})` } : undefined}
       />
       <div className="rentalCardBody">
-        <div>
+        <div className="rentalCardInfo">
           <h3 className="rentalCardTitle">{titulo}</h3>
           <p className="rentalCardPeriod">{periodo}</p>
         </div>
@@ -38,9 +39,11 @@ const CardAluguel = ({
           {configuracao.rotulo}
         </div>
         {acao ? (
-          <Botao type="button" variante={acao.variante} onClick={acao.aoClicar}>
-            {acao.rotulo}
-          </Botao>
+          <div className="rentalCardActions">
+            <Botao type="button" variante={acao.variante} onClick={acao.aoClicar}>
+              {acao.rotulo}
+            </Botao>
+          </div>
         ) : null}
         {acoesLocador ? (
           <div className="rentalCardActions">

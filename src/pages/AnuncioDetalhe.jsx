@@ -17,7 +17,7 @@ const anuncioMock = {
   locador: {
     nome: "Marina Souza",
     nota: 4.8,
-    totalAvaliacoes: 38,
+    totalAvaliacoes: 2,
   },
   avaliacoes: [
     {
@@ -125,56 +125,25 @@ const AnuncioDetalhe = () => {
     <div className="detailPage">
       <BarraNavegacao />
       <div className="detailContainer">
-        {/* ── Coluna esquerda: imagem em destaque ── */}
-        <div className="detailMedia">
-          <img
-            src={anuncioMock.imagem}
-            alt={anuncioMock.titulo}
-            className="detailImage"
-          />
-          <div className="detailBadges">
-            <span className="detailBadge">Disponivel agora</span>
-            <span className="detailBadge">Entrega rapida</span>
+        <div className="detailContent">
+          <div className="detailMedia">
+            <img
+              src={anuncioMock.imagem}
+              alt={anuncioMock.titulo}
+              className="detailImage"
+            />
           </div>
-        </div>
 
-        {/* ── Coluna direita: painel único agrupado ── */}
-          <div className="detailPanel">
-            {/* Título + localização */}
           <div className="detailHeader">
             <h1 className="detailTitle">{anuncioMock.titulo}</h1>
             <p className="detailLocation">{anuncioMock.localizacao}</p>
           </div>
 
-          <hr className="detailDivider" />
-
-          {/* Preços */}
-          <div className="detailPrices">
-              <div className="detailPriceItem">
-                <span>Diaria</span>
-                <strong>{formatarMoeda(anuncioMock.diaria)}</strong>
-              </div>
-              <div className="detailPriceItem">
-                <span>Semana</span>
-                <strong>{formatarMoeda(anuncioMock.semanal)}</strong>
-              </div>
-              <div className="detailPriceItem">
-                <span>Mes</span>
-                <strong>{formatarMoeda(anuncioMock.mensal)}</strong>
-              </div>
-          </div>
-
-          <hr className="detailDivider" />
-
-          {/* Descrição */}
           <div className="detailSection">
             <h2>Descricao</h2>
             <p>{anuncioMock.descricao}</p>
           </div>
 
-          <hr className="detailDivider" />
-
-          {/* Locador */}
           <div className="detailSection detailOwner">
             <div>
               <h2>Locador</h2>
@@ -186,70 +155,90 @@ const AnuncioDetalhe = () => {
             </div>
           </div>
 
-          <hr className="detailDivider" />
-
-          {/* Calendário / Ações */}
-          {!souLocador ? (
-            <div className="detailSection">
-              <h2>Selecione o periodo</h2>
-              <div className="detailDates">
-                <CampoEntrada
-                  rotulo="Data de inicio"
-                  type="date"
-                  value={dataInicio}
-                  min={valorHoje}
-                  onChange={(evento) => setDataInicio(evento.target.value)}
-                  erro={erros.dataInicio}
-                />
-                <CampoEntrada
-                  rotulo="Data de fim"
-                  type="date"
-                  value={dataFim}
-                  min={dataInicio || valorHoje}
-                  onChange={(evento) => setDataFim(evento.target.value)}
-                  erro={erros.dataFim}
-                />
-              </div>
-              {resumoSelecao ? (
-                <div className="detailSummary">{resumoSelecao}</div>
-              ) : null}
-              <Botao type="button" onClick={handleSubmit}>
-                Solicitar Aluguel
-              </Botao>
-              <Botao
-                type="button"
-                variante="secondary"
-                onClick={() => navigate("/chat")}
-              >
-                Abrir Chat
-              </Botao>
-            </div>
-          ) : (
-            <div className="detailSection">
-              <Botao type="button" onClick={() => navigate("/editar-anuncio")}>
-                Editar anuncio
-              </Botao>
-            </div>
-          )}
-
-          <hr className="detailDivider" />
-
-          {/* Avaliações */}
           <div className="detailSection">
             <h2>Avaliacoes</h2>
             <div className="detailReviews">
-            {anuncioMock.avaliacoes.map((review) => (
-              <article key={review.id} className="detailReview">
-                <div className="detailReviewHeader">
-                  <strong>{review.nome}</strong>
-                  <span>{review.nota} ★</span>
-                </div>
-                <p>{review.texto}</p>
-              </article>
-            ))}
+              {anuncioMock.avaliacoes.map((review) => (
+                <article key={review.id} className="detailReview">
+                  <div className="detailReviewHeader">
+                    <strong>{review.nome}</strong>
+                    <span>{review.nota} ★</span>
+                  </div>
+                  <p>{review.texto}</p>
+                </article>
+              ))}
             </div>
           </div>
         </div>
+
+        <aside className="detailBooking">
+          <div className="detailBookingCard">
+            <div className="detailPriceHero">
+              <span className="detailPriceLabel">Diaria</span>
+              <div className="detailPriceValue">
+                <span>R$</span>
+                <strong>{anuncioMock.diaria}</strong>
+                <small>/dia</small>
+              </div>
+            </div>
+
+            {!souLocador ? (
+              <div className="detailSection">
+                <h2>Selecione o periodo</h2>
+                <p className="detailPolicy">Limite de 30 dias</p>
+                <div className="detailDates">
+                  <CampoEntrada
+                    rotulo="Data de inicio"
+                    type="date"
+                    value={dataInicio}
+                    min={valorHoje}
+                    onChange={(evento) => setDataInicio(evento.target.value)}
+                    erro={erros.dataInicio}
+                  />
+                  <CampoEntrada
+                    rotulo="Data de fim"
+                    type="date"
+                    value={dataFim}
+                    min={dataInicio || valorHoje}
+                    onChange={(evento) => setDataFim(evento.target.value)}
+                    erro={erros.dataFim}
+                  />
+                </div>
+                {resumoSelecao ? (
+                  <div className="detailSummary">{resumoSelecao}</div>
+                ) : null}
+                <Botao type="button" onClick={handleSubmit}>
+                  Solicitar Aluguel
+                </Botao>
+                <button
+                  className="detailChatLink"
+                  type="button"
+                  onClick={() => navigate("/chat")}
+                >
+                  Abrir Chat
+                </button>
+              </div>
+            ) : (
+              <div className="detailSection">
+                <Botao type="button" onClick={() => navigate("/editar-anuncio")}>
+                  Editar anuncio
+                </Botao>
+              </div>
+            )}
+
+            <div className="detailSavings">
+              <h3>Economize</h3>
+              <div className="detailSavingsRow">
+                <span>Semana</span>
+                <strong>{formatarMoeda(anuncioMock.semanal)}</strong>
+              </div>
+              <div className="detailSavingsRow">
+                <span>Mes</span>
+                <strong>{formatarMoeda(anuncioMock.mensal)}</strong>
+              </div>
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

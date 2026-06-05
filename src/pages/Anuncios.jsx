@@ -58,6 +58,7 @@ const Anuncios = () => (
             titulo={anuncio.titulo}
             local={anuncio.localizacao}
             preco={anuncio.preco}
+            valorDiario={Number(anuncio.preco.replace("R$", "").split("/")[0].replace(",", "."))}
             imagem={anuncio.imagem}
             hrefCta={`/anuncios/${anuncio.id}`}
           />

@@ -1,6 +1,6 @@
 /* font import handled globally */
 
-.loginPage {
+.esqueciSenhaPage {
   min-height: 100vh;
   background: linear-gradient(135deg, oklch(97% 0.02 85) 0%, oklch(96% 0.01 80) 55%, oklch(95% 0.01 75) 100%);
   display: flex;
@@ -10,7 +10,7 @@
   font-family: "Manrope", "Poppins", sans-serif;
 }
 
-.loginSplit {
+.esqueciSenhaSplit {
   width: 100%;
   min-height: 100vh;
   display: grid;
@@ -19,7 +19,7 @@
   margin: 0 auto;
 }
 
-.loginBrand {
+.esqueciSenhaBrand {
   background: var(--color-bege-areia);
   padding: 48px 40px;
   display: flex;
@@ -30,7 +30,7 @@
   min-height: 100vh;
 }
 
-.loginBrandInner {
+.esqueciSenhaBrandInner {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -40,7 +40,7 @@
   width: 100%;
 }
 
-.loginBrandLogo {
+.esqueciSenhaBrandLogo {
   width: 100%;
   max-width: 180px;
   height: auto;
@@ -48,7 +48,7 @@
   margin-bottom: 4px;
 }
 
-.loginBrandTitle {
+.esqueciSenhaBrandTitle {
   font-size: 2rem;
   font-weight: 800;
   color: var(--color-grafite-escuro);
@@ -56,14 +56,14 @@
   max-width: 20ch;
 }
 
-.loginBrandSubtitle {
+.esqueciSenhaBrandSubtitle {
   font-size: 1rem;
   color: var(--color-cinza-apoio);
   line-height: 1.6;
   max-width: 38ch;
 }
 
-.loginFormPanel {
+.esqueciSenhaFormPanel {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -74,18 +74,18 @@
   min-height: 100vh;
 }
 
-.loginFormPanel > * {
+.esqueciSenhaFormPanel > * {
   max-width: 390px;
   width: 100%;
 }
 
-.loginHeader {
+.esqueciSenhaHeader {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-.loginEyebrow {
+.esqueciSenhaEyebrow {
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
@@ -93,89 +93,119 @@
   color: var(--color-ocre-acao-escuro);
 }
 
-.loginTitle {
+.esqueciSenhaTitle {
   font-size: 1.75rem;
   font-weight: 800;
   color: var(--color-grafite-escuro);
   letter-spacing: -0.02em;
 }
 
-.loginSubtitle {
+.esqueciSenhaSubtitle {
   font-size: 0.98rem;
   color: var(--color-cinza-texto);
+  line-height: 1.4;
 }
 
-.loginForm {
+.esqueciSenhaForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.loginPrivacy {
-  font-size: 0.82rem;
-  color: var(--color-cinza-texto);
-  margin-top: -8px;
-}
-
-.loginForgot {
+.esqueciSenhaLink {
   align-self: flex-start;
   font-size: 0.85rem;
   color: var(--color-ocre-acao);
   text-decoration: none;
   font-weight: 600;
-  margin-top: -6px;
+  text-align: center;
+  width: 100%;
 }
 
-.loginForgot:hover {
+.esqueciSenhaLink:hover {
   color: var(--color-grafite-escuro);
 }
 
-.loginFooter {
-  font-size: 0.9rem;
+/* ── Feedback de Sucesso ── */
+.esqueciSenhaSuccess {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 16px;
+  animation: slideUpSuccess 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUpSuccess {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.esqueciSenhaSuccessIcon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: oklch(80.4% 0.156 82.5 / 0.15);
+  color: var(--color-amarelo-acao);
+  font-size: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px oklch(80.4% 0.156 82.5 / 0.15);
+}
+
+.esqueciSenhaSuccess h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--color-grafite-escuro);
+  letter-spacing: -0.02em;
+  margin: 8px 0 0;
+}
+
+.esqueciSenhaSuccess p {
+  font-size: 0.92rem;
   color: var(--color-cinza-texto);
-}
-
-.loginFooter a {
-  color: var(--color-ocre-acao);
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.loginFooter a:hover {
-  color: var(--color-grafite-escuro);
+  line-height: 1.5;
+  margin: 0;
 }
 
 @media (min-width: 900px) {
-  .loginSplit {
+  .esqueciSenhaSplit {
     grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr);
     align-items: stretch;
   }
 }
 
 @media (max-width: 899px) {
-  .loginPage {
+  .esqueciSenhaPage {
     padding: 24px 20px 40px;
   }
 
-  .loginSplit {
+  .esqueciSenhaSplit {
     grid-template-columns: 1fr;
     gap: 24px;
   }
 
-  .loginBrand {
+  .esqueciSenhaBrand {
     border-radius: 24px;
     padding: 32px 24px;
     min-height: auto;
     align-items: flex-start;
   }
 
-  .loginFormPanel {
+  .esqueciSenhaFormPanel {
     padding: 24px 12px 8px;
     min-height: auto;
     align-items: flex-start;
   }
 
-  .loginBrandInner {
+  .esqueciSenhaBrandInner {
     align-items: flex-start;
     text-align: left;
   }

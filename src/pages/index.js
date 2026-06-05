@@ -10,3 +10,4 @@ export { default as Chat } from "./Chat";
 export { default as EditarPerfil } from "./EditarPerfil";
 export { default as Avaliacao } from "./Avaliacao";
 export { default as EditarAnuncio } from "./EditarAnuncio";
+export { default as EsqueciSenha } from "./EsqueciSenha";

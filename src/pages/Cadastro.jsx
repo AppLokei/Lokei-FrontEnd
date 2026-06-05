@@ -91,92 +91,134 @@ const Cadastro = () => {
 
   return (
     <div className="cadastroPage">
-      <div className="cadastroCard">
-        <header className="cadastroHeader">
-          <span className="cadastroBadge">Cadastro Lokei</span>
-          <h1 className="cadastroTitle">Crie sua conta</h1>
-          <p className="cadastroSubtitle">
-            Complete seus dados para comecar a alugar ferramentas.
-          </p>
-        </header>
-
-        <form className="cadastroForm" onSubmit={handleSubmit}>
-          <CampoEntrada
-            rotulo="Nome Completo"
-            name="nomeCompleto"
-            placeholder="Seu nome"
-            value={nomeCompleto}
-            onChange={(evento) => setNomeCompleto(evento.target.value)}
-            erro={erros.nomeCompleto}
-          />
-          <CampoEntrada
-            rotulo="E-mail"
-            name="email"
-            type="email"
-            placeholder="voce@email.com"
-            value={email}
-            onChange={(evento) => setEmail(evento.target.value)}
-            erro={erros.email}
-          />
-          <CampoEntrada
-            rotulo="CPF"
-            name="cpf"
-            placeholder="000.000.000-00"
-            value={cpf}
-            onChange={handleCpfChange}
-            inputMode="numeric"
-            erro={erros.cpf}
-          />
-          <CampoEntrada
-            rotulo="Telefone"
-            name="telefone"
-            placeholder="(11) 99999-9999"
-            value={telefone}
-            onChange={(evento) => setTelefone(evento.target.value)}
-            erro={erros.telefone}
-          />
-          <CampoEntrada
-            rotulo="Senha"
-            name="senha"
-            type="password"
-            placeholder="Crie uma senha"
-            value={senha}
-            onChange={(evento) => setSenha(evento.target.value)}
-            erro={erros.senha}
-          />
-          <CampoEntrada
-            rotulo="Confirmar Senha"
-            name="confirmarSenha"
-            type="password"
-            placeholder="Repita sua senha"
-            value={confirmarSenha}
-            onChange={(evento) => setConfirmarSenha(evento.target.value)}
-            erro={erros.confirmarSenha}
-          />
-
-          <div>
-            <label className="cadastroTerms">
-              <input
-                type="checkbox"
-                checked={aceiteTermos}
-                onChange={(evento) => setAceiteTermos(evento.target.checked)}
-              />
-              <span>
-                Concordo com os Termos de Uso e Politica de Privacidade.
-              </span>
-            </label>
-            {erros.aceiteTermos ? (
-              <div className="cadastroTermsError">{erros.aceiteTermos}</div>
-            ) : null}
+      <div className="cadastroSplit">
+        <section className="cadastroBrand">
+          <div className="cadastroBrandInner">
+            <img className="cadastroBrandLogo" src="/logo-transparent.png" alt="Lokei Logo" />
+            <h1 className="cadastroBrandTitle">
+              Alugue ferramentas com seguranca, clareza e diaria transparente.
+            </h1>
+            <p className="cadastroBrandSubtitle">
+              Uma conta so. Reserva rapida, combinacao facil e suporte quando precisar.
+            </p>
           </div>
+        </section>
 
-          <div className="cadastroActions">
-            <Botao type="submit">Cadastrar</Botao>
-            <Link className="cadastroLink" to="/login">
-              Ja tenho conta
-            </Link>
-          </div>
-        </form>
+        <section className="cadastroFormPanel">
+          <header className="cadastroHeader">
+            <p className="cadastroEyebrow">Crie sua conta</p>
+            <h2 className="cadastroTitle">Comece a alugar hoje</h2>
+            <p className="cadastroSubtitle">
+              Organize seus dados em duas etapas simples.
+            </p>
+          </header>
+
+          <form className="cadastroForm" onSubmit={handleSubmit}>
+            <div className="cadastroSection">
+              <div className="cadastroSectionHeader">
+                <p className="cadastroSectionTitle">1. Dados Pessoais</p>
+                <span className="cadastroSectionHint">Dados para identificar sua conta.</span>
+              </div>
+              <div className="cadastroFieldGroup">
+                <CampoEntrada
+                  rotulo="Nome Completo"
+                  name="nomeCompleto"
+                  placeholder="Seu nome"
+                  value={nomeCompleto}
+                  onChange={(evento) => setNomeCompleto(evento.target.value)}
+                  erro={erros.nomeCompleto}
+                />
+                <CampoEntrada
+                  rotulo="E-mail"
+                  name="email"
+                  type="email"
+                  placeholder="voce@email.com"
+                  value={email}
+                  onChange={(evento) => setEmail(evento.target.value)}
+                  erro={erros.email}
+                />
+                <CampoEntrada
+                  rotulo="CPF"
+                  name="cpf"
+                  placeholder="000.000.000-00"
+                  value={cpf}
+                  onChange={handleCpfChange}
+                  inputMode="numeric"
+                  erro={erros.cpf}
+                />
+                <CampoEntrada
+                  rotulo="Telefone"
+                  name="telefone"
+                  placeholder="(11) 99999-9999"
+                  value={telefone}
+                  onChange={(evento) => setTelefone(evento.target.value)}
+                  erro={erros.telefone}
+                />
+                <CampoEntrada
+                  rotulo="Senha"
+                  name="senha"
+                  type="password"
+                  placeholder="Crie uma senha"
+                  value={senha}
+                  onChange={(evento) => setSenha(evento.target.value)}
+                  erro={erros.senha}
+                />
+                <CampoEntrada
+                  rotulo="Confirmar Senha"
+                  name="confirmarSenha"
+                  type="password"
+                  placeholder="Repita sua senha"
+                  value={confirmarSenha}
+                  onChange={(evento) => setConfirmarSenha(evento.target.value)}
+                  erro={erros.confirmarSenha}
+                />
+              </div>
+            </div>
+
+            <div className="cadastroSection">
+              <div className="cadastroSectionHeader">
+                <p className="cadastroSectionTitle">2. Endereco</p>
+                <span className="cadastroSectionHint">Use o endereco para entregas e retiradas.</span>
+              </div>
+              <div className="cadastroFieldGroup">
+                <CampoEntrada rotulo="CEP" name="cep" placeholder="00000-000" />
+                <CampoEntrada rotulo="Logradouro" name="logradouro" placeholder="Rua, avenida" />
+                <div className="cadastroFieldRow">
+                  <CampoEntrada rotulo="Numero" name="numero" placeholder="Numero" />
+                  <CampoEntrada rotulo="Complemento" name="complemento" placeholder="Apartamento, bloco" />
+                </div>
+                <CampoEntrada rotulo="Bairro" name="bairro" placeholder="Seu bairro" />
+                <div className="cadastroFieldRow">
+                  <CampoEntrada rotulo="Cidade" name="cidade" placeholder="Cidade" />
+                  <CampoEntrada rotulo="Estado" name="estado" placeholder="UF" />
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <label className="cadastroTerms">
+                <input
+                  type="checkbox"
+                  checked={aceiteTermos}
+                  onChange={(evento) => setAceiteTermos(evento.target.checked)}
+                />
+                <span>
+                  Concordo com os Termos de Uso e Politica de Privacidade.
+                </span>
+              </label>
+              {erros.aceiteTermos ? (
+                <div className="cadastroTermsError">{erros.aceiteTermos}</div>
+              ) : null}
+            </div>
+
+            <div className="cadastroActions">
+              <Botao type="submit">Cadastrar</Botao>
+              <Link className="cadastroLink" to="/login">
+                Ja tenho conta
+              </Link>
+            </div>
+          </form>
+        </section>
       </div>
     </div>
   );

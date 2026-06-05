@@ -1,23 +1,23 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+/* font import handled globally */
 
 .editarAnuncioPage {
   min-height: 100vh;
-  background: linear-gradient(180deg, #fff7e7 0%, #f8f7f4 45%, #ffffff 100%);
+  background: linear-gradient(180deg, oklch(97% 0.02 85) 0%, oklch(96% 0.01 80) 55%, oklch(95% 0.01 75) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 32px 20px 100px;
-  font-family: "Poppins", sans-serif;
+  font-family: "Manrope", "Poppins", sans-serif;
 }
 
 .editarAnuncioCard {
   width: 100%;
   max-width: 520px;
-  background: #ffffff;
+  background: var(--color-branco-brilhante);
   border-radius: 24px;
   padding: 32px 28px;
   box-shadow: 0 24px 50px rgba(24, 24, 24, 0.08);
-  border: 1px solid rgba(240, 180, 41, 0.15);
+  border: 1px solid oklch(80.4% 0.156 82.5 / 0.15);
 }
 
 /* ── Header ── */
@@ -32,8 +32,8 @@
   align-self: flex-start;
   padding: 6px 12px;
   border-radius: 999px;
-  background: rgba(240, 180, 41, 0.2);
-  color: #9b6b00;
+  background: oklch(80.4% 0.156 82.5 / 0.2);
+  color: var(--color-ocre-acao);
   font-size: 0.75rem;
   font-weight: 600;
 }
@@ -41,12 +41,12 @@
 .editarAnuncioHeader h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .editarAnuncioHeader p {
   font-size: 0.9rem;
-  color: #6b6b6b;
+  color: var(--color-cinza-texto);
 }
 
 /* ── Form ── */
@@ -66,24 +66,24 @@
 .editarAnuncioUploadLabel {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .editarAnuncioUploadArea {
-  border: 1px dashed rgba(240, 180, 41, 0.6);
+  border: 1px dashed oklch(80.4% 0.156 82.5 / 0.6);
   border-radius: 18px;
   padding: 20px;
-  background: rgba(240, 180, 41, 0.12);
+  background: oklch(80.4% 0.156 82.5 / 0.12);
   display: flex;
   flex-direction: column;
   gap: 12px;
   align-items: flex-start;
-  color: #6b6b6b;
+  color: var(--color-cinza-texto);
 }
 
 .editarAnuncioUploadArea strong {
   font-size: 0.95rem;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .editarAnuncioUploadArea span {
@@ -93,10 +93,10 @@
 .editarAnuncioUploadButton {
   padding: 10px 14px;
   border-radius: 12px;
-  background: #ffffff;
-  border: 1px solid rgba(240, 180, 41, 0.4);
+  background: var(--color-branco-brilhante);
+  border: 1px solid oklch(80.4% 0.156 82.5 / 0.4);
   font-weight: 600;
-  color: #8a6a00;
+  color: var(--color-ocre-acao-escuro);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -116,8 +116,8 @@
 
 .editarAnuncioPreview {
   margin: 0;
-  background: #ffffff;
-  border: 1px solid rgba(240, 180, 41, 0.18);
+  background: var(--color-branco-brilhante);
+  border: 1px solid oklch(80.4% 0.156 82.5 / 0.18);
   border-radius: 14px;
   padding: 8px;
   display: flex;
@@ -141,8 +141,8 @@
   right: 6px;
   top: 6px;
   border: none;
-  background: rgba(198, 55, 55, 0.9);
-  color: #ffffff;
+  background: oklch(55.3% 0.180 25.3 / 0.9);
+  color: var(--color-branco-brilhante);
   font-size: 0.65rem;
   padding: 4px 8px;
   border-radius: 999px;
@@ -151,7 +151,7 @@
 
 .editarAnuncioPreview figcaption {
   font-size: 0.72rem;
-  color: #5b5b5b;
+  color: var(--color-cinza-apoio);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -165,26 +165,26 @@
   gap: 6px;
   font-size: 0.85rem;
   font-weight: 600;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .editarAnuncioSelectField select,
 .editarAnuncioTextareaField textarea {
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--color-cinza-borda);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 0.95rem;
-  font-family: "Poppins", sans-serif;
-  background: #ffffff;
-  color: #1f1f1f;
+  font-family: "Manrope", "Poppins", sans-serif;
+  background: var(--color-branco-brilhante);
+  color: var(--color-grafite-escuro);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .editarAnuncioSelectField select:focus,
 .editarAnuncioTextareaField textarea:focus {
-  border-color: #f0b429;
-  box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.2);
+  border-color: var(--color-amarelo-acao);
+  box-shadow: 0 0 0 3px oklch(80.4% 0.156 82.5 / 0.2);
 }
 
 .editarAnuncioTextareaField textarea {
@@ -196,15 +196,19 @@
 .editarAnuncioHint {
   display: block;
   font-size: 0.75rem;
-  color: #6b6b6b;
+  color: var(--color-cinza-texto);
   margin-top: 4px;
 }
 
 /* ── Erro ── */
 .editarAnuncioError {
   font-size: 0.75rem;
-  color: #d64545;
+  color: var(--color-vermelho-alerta);
   font-weight: 500;
+}
+
+.hasError {
+  border-color: var(--color-vermelho-alerta);
 }
 
 /* ── Desktop ── */
@@ -215,5 +219,12 @@
 
   .editarAnuncioCard {
     padding: 36px 34px;
+  }
+}
+
+@media (max-width: 480px) {
+  .editarAnuncioCard {
+    padding: 24px 16px;
+    border-radius: 20px;
   }
 }

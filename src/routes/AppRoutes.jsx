@@ -17,6 +17,7 @@ import {
   EditarPerfil,
   Avaliacao,
   EditarAnuncio,
+  EsqueciSenha,
 } from "../pages";
 
 const RotasApp = () => (
@@ -34,6 +35,7 @@ const RotasApp = () => (
       <Rota path="/perfil/editar" element={<EditarPerfil />} />
       <Rota path="/avaliar" element={<Avaliacao />} />
       <Rota path="/editar-anuncio" element={<EditarAnuncio />} />
+      <Rota path="/esqueci-senha" element={<EsqueciSenha />} />
     </Rotas>
   </Roteador>
 );

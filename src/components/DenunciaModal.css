@@ -1,10 +1,10 @@
-@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap");
+/* font import handled globally */
 
 /* ── Overlay ── */
 .denunciaOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: oklch(21.8% 0.01 96 / 0.45);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14,7 +14,7 @@
 
 /* ── Modal ── */
 .denunciaModal {
-  background: #ffffff;
+  background: var(--color-branco-brilhante);
   border-radius: 24px;
   width: 100%;
   max-width: 480px;
@@ -22,8 +22,8 @@
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  font-family: "Poppins", sans-serif;
-  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.18);
+  font-family: "Manrope", "Poppins", sans-serif;
+  box-shadow: 0 24px 50px oklch(21.8% 0.01 96 / 0.18);
 }
 
 /* ── Header ── */
@@ -37,7 +37,7 @@
 .denunciaHeader h2 {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .denunciaClose {
@@ -49,13 +49,13 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b6b6b;
+  color: var(--color-cinza-texto);
   border-radius: 8px;
   transition: background 0.15s ease;
 }
 
 .denunciaClose:hover {
-  background: #f3f4f6;
+  background: var(--color-cinza-fundo);
 }
 
 .denunciaClose svg {
@@ -83,17 +83,17 @@
 .denunciaLabel {
   font-size: 0.85rem;
   font-weight: 600;
-  color: #1f1f1f;
+  color: var(--color-grafite-escuro);
 }
 
 .denunciaSelect {
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--color-cinza-borda);
   border-radius: 12px;
   padding: 12px 14px;
   font-size: 0.95rem;
-  font-family: "Poppins", sans-serif;
-  background: #ffffff;
-  color: #1f1f1f;
+  font-family: "Manrope", "Poppins", sans-serif;
+  background: var(--color-branco-brilhante);
+  color: var(--color-grafite-escuro);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
   width: 100%;
@@ -101,17 +101,17 @@
 }
 
 .denunciaSelect:focus {
-  border-color: #f0b429;
-  box-shadow: 0 0 0 3px rgba(240, 180, 41, 0.2);
+  border-color: var(--color-amarelo-acao);
+  box-shadow: 0 0 0 3px oklch(80.4% 0.156 82.5 / 0.2);
 }
 
 .denunciaSelect--error {
-  border-color: #d64545;
+  border-color: var(--color-vermelho-alerta);
 }
 
 .denunciaError {
   font-size: 0.75rem;
-  color: #d64545;
+  color: var(--color-vermelho-alerta);
 }
 
 /* ── Imagens ── */
@@ -131,12 +131,12 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--color-branco-calmo);
+  border: 1px solid var(--color-cinza-borda-suave);
   border-radius: 10px;
   padding: 8px 12px;
   font-size: 0.82rem;
-  color: #4b5563;
+  color: var(--color-ardosia);
 }
 
 .denunciaImageName {
@@ -150,7 +150,7 @@
 .denunciaImageRemove {
   border: none;
   background: transparent;
-  color: #9ca3af;
+  color: var(--color-cinza-frio);
   font-size: 1.1rem;
   cursor: pointer;
   line-height: 1;
@@ -160,8 +160,8 @@
 }
 
 .denunciaImageRemove:hover {
-  color: #6b7280;
-  background: #f3f4f6;
+  color: var(--color-cinza-texto);
+  background: var(--color-cinza-fundo);
 }
 
 /* Botão "Adicionar imagens" — ação SECUNDÁRIA (cinza), não vermelho */
@@ -171,11 +171,11 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 16px;
-  border: 1px dashed #d1d5db;
+  border: 1px dashed var(--color-cinza-borda-suave);
   border-radius: 14px;
-  background: #f9fafb;
-  color: #4b5563;
-  font-family: "Poppins", sans-serif;
+  background: var(--color-branco-calmo);
+  color: var(--color-ardosia);
+  font-family: "Manrope", "Poppins", sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -183,8 +183,8 @@
 }
 
 .denunciaAddImageBtn:hover {
-  background: #f3f4f6;
-  border-color: #9ca3af;
+  background: var(--color-cinza-fundo);
+  border-color: var(--color-cinza-frio);
 }
 
 .denunciaAddImageIcon {

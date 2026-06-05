@@ -14,11 +14,9 @@ const Login = () => {
 
   const validar = () => {
     const proximosErros = {};
-    const temEmail = login.includes("@");
-
     if (!login.trim()) {
-      proximosErros.login = "Informe seu e-mail ou CPF.";
-    } else if (temEmail && !login.includes("@")) {
+      proximosErros.login = "Informe seu e-mail.";
+    } else if (!login.includes("@")) {
       proximosErros.login = "Digite um e-mail valido.";
     }
 
@@ -42,58 +40,65 @@ const Login = () => {
 
   return (
     <div className="loginPage">
-      <div className="loginCard">
-        <header className="loginHeader">
-          <div className="loginLogo">
-            Lo<span className="loginHighlight">kei</span>
-          </div>
-          <div>
-            <h1 className="loginTitle">Bem-vindo de volta</h1>
-            <p className="loginSubtitle">
-              Acesse sua conta para continuar alugando.
+      <div className="loginSplit">
+        <section className="loginBrand">
+          <div className="loginBrandInner">
+            <img className="loginBrandLogo" src="/logo-transparent.png" alt="Lokei Logo" />
+            <h1 className="loginBrandTitle">
+              Alugue as ferramentas que voce precisa, quando precisar.
+            </h1>
+            <p className="loginBrandSubtitle">
+              Tudo o que voce precisa para projetos rapidos, com diaria clara e retirada facil.
             </p>
           </div>
-        </header>
+        </section>
 
-        <form className="loginForm" onSubmit={handleSubmit}>
-          <CampoEntrada
-            rotulo="E-mail ou CPF"
-            name="login"
-            placeholder="email@dominio.com"
-            value={login}
-            onChange={(evento) => setLogin(evento.target.value)}
-            erro={erros.login}
-          />
-          <CampoEntrada
-            rotulo="Senha"
-            name="senha"
-            type={mostrarSenha ? "text" : "password"}
-            placeholder="Digite sua senha"
-            value={senha}
-            onChange={(evento) => setSenha(evento.target.value)}
-            erro={erros.senha}
-            acao={
-              <button
-                type="button"
-                className="inputActionButton"
-                onClick={() => setMostrarSenha((prev) => !prev)}
-              >
-                {mostrarSenha ? "Ocultar" : "Mostrar"}
-              </button>
-            }
-          />
+        <section className="loginFormPanel">
+          <header className="loginHeader">
+            <p className="loginEyebrow">Acesse sua conta</p>
+            <h2 className="loginTitle">Bem-vindo de volta</h2>
+            <p className="loginSubtitle">Entre para continuar alugando.</p>
+          </header>
 
-          <Link className="loginForgot" to="/">
-            Esqueci minha senha
-          </Link>
+          <form className="loginForm" onSubmit={handleSubmit}>
+            <CampoEntrada
+              rotulo="E-mail"
+              name="login"
+              placeholder="Digite seu email@dominio.com"
+              value={login}
+              onChange={(evento) => setLogin(evento.target.value)}
+              erro={erros.login}
+            />
+            <p className="loginPrivacy">Seus dados sao protegidos e nunca compartilhados.</p>
+            <CampoEntrada
+              rotulo="Senha"
+              name="senha"
+              type={mostrarSenha ? "text" : "password"}
+              placeholder="Digite sua senha"
+              value={senha}
+              onChange={(evento) => setSenha(evento.target.value)}
+              erro={erros.senha}
+              acao={
+                <button
+                  type="button"
+                  className="inputActionButton"
+                  onClick={() => setMostrarSenha((prev) => !prev)}
+                >
+                  {mostrarSenha ? "Ocultar" : "Mostrar"}
+                </button>
+              }
+            />
 
-          <Botao type="submit">Entrar</Botao>
+            <Botao type="submit">Entrar</Botao>
+            <Link className="loginForgot" to="/esqueci-senha">
+              Esqueci minha senha
+            </Link>
+          </form>
 
-        </form>
-
-        <div className="loginFooter">
-          Ainda nao tem conta? <Link to="/cadastro">Cadastre-se</Link>
-        </div>
+          <div className="loginFooter">
+            Ainda nao tem conta? <Link to="/cadastro">Cadastre-se</Link>
+          </div>
+        </section>
       </div>
     </div>
   );

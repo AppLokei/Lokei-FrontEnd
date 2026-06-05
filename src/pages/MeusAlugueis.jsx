@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import CardAluguel from "../components/RentalCard";
 import BarraNavegacao from "../components/NavigationBar";
+import ConfirmationModal from "../components/ConfirmationModal";
 import "./MeusAlugueis.css";
 
 const itensLocatario = [
@@ -45,7 +46,7 @@ const itensLocador = [
     id: 5,
     titulo: "Martelo Demolidor",
     periodo: "01 a 05 de Maio",
-    status: "andamento",
+    status: "confirmado",
     imagem:
       "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
   },
@@ -61,6 +62,12 @@ const itensLocador = [
 
 const MeusAlugueis = () => {
   const [abaAtiva, setAbaAtiva] = useState("alugando");
+  const [modalConfirmacao, setModalConfirmacao] = useState({
+    aberto: false,
+    tipo: "", // "cancelar" | "reprovar"
+    aluguelId: null,
+    tituloAluguel: "",
+  });
   const navigate = useNavigate();
 
   const handleOwnerAction = (id, acao) => {
@@ -102,7 +109,12 @@ const MeusAlugueis = () => {
                       rotulo: "Cancelar Solicitacao",
                       variante: "outlineRed",
                       aoClicar: () =>
-                          console.log({ id: aluguel.id, acao: "cancelar" }),
+                        setModalConfirmacao({
+                          aberto: true,
+                          tipo: "cancelar",
+                          aluguelId: aluguel.id,
+                          tituloAluguel: aluguel.titulo,
+                        }),
                     }
                     : aluguel.status === "andamento"
                       ? {
@@ -131,20 +143,35 @@ const MeusAlugueis = () => {
               })
             : itensLocador.map((aluguel) => {
                 const acoesLocador =
-                  aluguel.status === "analise"
+                  aluguel.status === "confirmado"
                     ? [
                         {
-                          rotulo: "Aprovar",
-                          variante: "solidGreen",
-                          aoClicar: () => handleOwnerAction(aluguel.id, "aprovar"),
-                        },
-                        {
-                          rotulo: "Reprovar",
-                          variante: "outlineRed",
-                          aoClicar: () => handleOwnerAction(aluguel.id, "reprovar"),
+                          rotulo: "Confirmar Pagamento e Entrega",
+                          variante: "primary",
+                          aoClicar: () =>
+                            handleOwnerAction(aluguel.id, "confirmar_pagamento_entrega"),
                         },
                       ]
-                    : null;
+                    : aluguel.status === "analise"
+                      ? [
+                          {
+                            rotulo: "Aprovar",
+                            variante: "solidGreen",
+                            aoClicar: () => handleOwnerAction(aluguel.id, "aprovar"),
+                          },
+                          {
+                            rotulo: "Reprovar",
+                            variante: "outlineRed",
+                            aoClicar: () =>
+                              setModalConfirmacao({
+                                aberto: true,
+                                tipo: "reprovar",
+                                aluguelId: aluguel.id,
+                                tituloAluguel: aluguel.titulo,
+                              }),
+                          },
+                        ]
+                      : null;
 
                 return (
                   <CardAluguel
@@ -158,6 +185,49 @@ const MeusAlugueis = () => {
                 );
               })}
         </div>
+
+        <ConfirmationModal
+          aberto={modalConfirmacao.aberto}
+          aoFechar={() =>
+            setModalConfirmacao({
+              aberto: false,
+              tipo: "",
+              aluguelId: null,
+              tituloAluguel: "",
+            })
+          }
+          aoConfirmar={() => {
+            if (modalConfirmacao.tipo === "cancelar") {
+              console.log({ id: modalConfirmacao.aluguelId, acao: "cancelar" });
+            } else if (modalConfirmacao.tipo === "reprovar") {
+              handleOwnerAction(modalConfirmacao.aluguelId, "reprovar");
+            }
+            setModalConfirmacao({
+              aberto: false,
+              tipo: "",
+              aluguelId: null,
+              tituloAluguel: "",
+            });
+          }}
+          titulo={
+            modalConfirmacao.tipo === "cancelar"
+              ? "Cancelar solicitação?"
+              : "Reprovar solicitação?"
+          }
+          descricao={
+            <p>
+              Tem certeza que deseja{" "}
+              {modalConfirmacao.tipo === "cancelar" ? "cancelar" : "reprovar"} o
+              pedido de aluguel para <strong>{modalConfirmacao.tituloAluguel}</strong>?
+            </p>
+          }
+          textoConfirmar={
+            modalConfirmacao.tipo === "cancelar"
+              ? "Confirmar Cancelamento"
+              : "Reprovar Solicitação"
+          }
+          varianteConfirmar="outlineRed"
+        />
       </div>
     </div>
   );

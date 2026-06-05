@@ -107,117 +107,133 @@ const Anunciar = () => {
   return (
     <div className="anunciarPage">
       <BarraNavegacao />
-      <div className="anunciarCard">
-        <header className="anunciarHeader">
-          <span className="anunciarBadge">Novo anuncio</span>
-          <h1 className="anunciarTitle">Publique sua ferramenta</h1>
-          <p className="anunciarSubtitle">
-            Adicione fotos e detalhes para atrair mais locatarios.
-          </p>
-        </header>
+      <div className="anunciarLayout">
+        <section className="anunciarMain">
+          <header className="anunciarHeader">
+            <span className="anunciarBadge">Novo anuncio</span>
+            <h1 className="anunciarTitle">Publique sua ferramenta</h1>
+            <p className="anunciarSubtitle">
+              Adicione fotos e detalhes para atrair mais locatarios.
+            </p>
+          </header>
 
-        <form className="anunciarForm" onSubmit={handleSubmit}>
-          <div className="anunciarUpload">
-            <label className="anunciarUploadLabel">Fotos (max. 5)</label>
-            <div className="anunciarUploadArea">
-              <div>
-                <strong>Arraste ou selecione fotos</strong>
-                <span>Formatos JPG, JPEG ou PNG ate 5MB</span>
+          <form className="anunciarForm" onSubmit={handleSubmit}>
+            <div className="anunciarUpload">
+              <label className="anunciarUploadLabel">Fotos (max. 5)</label>
+              <div className="anunciarUploadArea">
+                <div>
+                  <strong>Arraste ou selecione fotos</strong>
+                  <span>Formatos JPG, JPEG ou PNG ate 5MB</span>
+                </div>
+                {podeAdicionarMais ? (
+                  <label className="anunciarUploadButton">
+                    Adicionar fotos
+                    <input
+                      type="file"
+                      accept=".jpg,.jpeg,.png"
+                      multiple
+                      onChange={handleFiles}
+                      className="anunciarUploadInput"
+                    />
+                  </label>
+                ) : null}
               </div>
-              {podeAdicionarMais ? (
-                <label className="anunciarUploadButton">
-                  Adicionar fotos
-                  <input
-                    type="file"
-                    accept=".jpg,.jpeg,.png"
-                    multiple
-                    onChange={handleFiles}
-                    className="anunciarUploadInput"
-                  />
-                </label>
+              {urlsPreview.length ? (
+                <div className="anunciarPreviewGrid">
+                  {urlsPreview.map((arquivo, index) => (
+                    <figure
+                      key={`${arquivo.nome}-${index}`}
+                      className="anunciarPreview"
+                    >
+                      <div className="anunciarPreviewImage">
+                        <img src={arquivo.url} alt={arquivo.nome} />
+                        <button
+                          type="button"
+                          className="anunciarRemove"
+                          onClick={() =>
+                            setFotos((prev) => prev.filter((_, i) => i !== index))
+                          }
+                          aria-label="Remover foto"
+                        >
+                          Remover
+                        </button>
+                      </div>
+                      <figcaption>{arquivo.nome}</figcaption>
+                    </figure>
+                  ))}
+                </div>
+              ) : null}
+              {erros.fotos ? (
+                <span className="anunciarError">{erros.fotos}</span>
               ) : null}
             </div>
-            {urlsPreview.length ? (
-              <div className="anunciarPreviewGrid">
-                {urlsPreview.map((arquivo, index) => (
-                  <figure
-                    key={`${arquivo.nome}-${index}`}
-                    className="anunciarPreview"
-                  >
-                    <div className="anunciarPreviewImage">
-                      <img src={arquivo.url} alt={arquivo.nome} />
-                      <button
-                        type="button"
-                        className="anunciarRemove"
-                        onClick={() =>
-                          setFotos((prev) => prev.filter((_, i) => i !== index))
-                        }
-                        aria-label="Remover foto"
-                      >
-                        Remover
-                      </button>
-                    </div>
-                    <figcaption>{arquivo.nome}</figcaption>
-                  </figure>
-                ))}
-              </div>
-            ) : null}
-            {erros.fotos ? (
-              <span className="anunciarError">{erros.fotos}</span>
-            ) : null}
-          </div>
 
-          <CampoEntrada
-            rotulo="Titulo"
-            name="titulo"
-            placeholder="Ex: Furadeira de impacto"
-            value={titulo}
-            onChange={(evento) => setTitulo(evento.target.value)}
-            erro={erros.titulo}
-          />
-
-          <label className="anunciarSelectField">
-            <span>Categoria</span>
-            <select
-              value={categoria}
-              onChange={(evento) => setCategoria(evento.target.value)}
-              className={erros.categoria ? "hasError" : ""}
-            >
-              <option value="">Selecione</option>
-              <option value="eletricas">Ferramentas Eletricas</option>
-              <option value="manuais">Ferramentas Manuais</option>
-              <option value="jardinagem">Jardinagem</option>
-            </select>
-            {erros.categoria ? (
-              <span className="anunciarError">{erros.categoria}</span>
-            ) : null}
-          </label>
-
-          <CampoEntrada
-            rotulo="Valor do aluguel (R$)"
-            name="valor"
-            placeholder="0,00"
-            value={valor}
-            onChange={(evento) => setValor(evento.target.value)}
-            erro={erros.valor}
-          />
-
-          <label className="anunciarTextareaField">
-            <span>Descricao</span>
-            <textarea
-              value={descricao}
-              onChange={(evento) => setDescricao(evento.target.value)}
-              placeholder="Descreva o estado, itens inclusos e observacoes."
-              className={erros.descricao ? "hasError" : ""}
-              rows={4}
+            <CampoEntrada
+              rotulo="Titulo"
+              name="titulo"
+              placeholder="Ex: Furadeira de impacto"
+              value={titulo}
+              onChange={(evento) => setTitulo(evento.target.value)}
+              erro={erros.titulo}
             />
-            {erros.descricao ? (
-              <span className="anunciarError">{erros.descricao}</span>
-            ) : null}
-          </label>
 
-          <Botao type="submit">Publicar Anuncio</Botao>
-        </form>
+            <label className="anunciarSelectField">
+              <span>Categoria</span>
+              <select
+                value={categoria}
+                onChange={(evento) => setCategoria(evento.target.value)}
+                className={erros.categoria ? "hasError" : ""}
+              >
+                <option value="">Selecione</option>
+                <option value="eletricas">Ferramentas Eletricas</option>
+                <option value="manuais">Ferramentas Manuais</option>
+                <option value="jardinagem">Jardinagem</option>
+              </select>
+              {erros.categoria ? (
+                <span className="anunciarError">{erros.categoria}</span>
+              ) : null}
+            </label>
+
+            <CampoEntrada
+              rotulo="Valor do aluguel (R$)"
+              name="valor"
+              placeholder="0,00"
+              value={valor}
+              onChange={(evento) => setValor(evento.target.value)}
+              erro={erros.valor}
+            />
+
+            <label className="anunciarTextareaField">
+              <span>Descricao</span>
+              <textarea
+                value={descricao}
+                onChange={(evento) => setDescricao(evento.target.value)}
+                placeholder="Descreva o estado, itens inclusos e observacoes."
+                className={erros.descricao ? "hasError" : ""}
+                rows={5}
+              />
+              {erros.descricao ? (
+                <span className="anunciarError">{erros.descricao}</span>
+              ) : null}
+            </label>
+
+            <div className="anunciarCtaBar">
+              <Botao type="submit">Publicar Anuncio</Botao>
+            </div>
+          </form>
+        </section>
+
+        <aside className="anunciarTips">
+          <div className="anunciarTipsInner">
+            <h2>Dicas rapidas</h2>
+            <ul>
+              <li>Tire fotos bem iluminadas.</li>
+              <li>Mostre detalhes e sinais de uso.</li>
+              <li>Descreva o estado de conservacao.</li>
+              <li>Informe itens incluidos e acessorios.</li>
+            </ul>
+          </div>
+        </aside>
       </div>
     </div>
   );
