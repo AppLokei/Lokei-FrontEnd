@@ -6,6 +6,9 @@ import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
 import "./Anunciar.css";
 
+import { criarAnuncio } from "../services/anuncioService";
+import { buscarCategorias } from "../services/categoriaService";
+
 const MAX_FOTOS = 5;
 const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
@@ -13,6 +16,7 @@ const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 const Anunciar = () => {
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [categorias, setCategorias] = useState([]);
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [fotos, setFotos] = useState([]);
@@ -27,7 +31,7 @@ const Anunciar = () => {
         nome: arquivo.name,
         url: URL.createObjectURL(arquivo),
       })),
-    [fotos]
+    [fotos],
   );
 
   useEffect(() => {
@@ -35,6 +39,10 @@ const Anunciar = () => {
       urlsPreview.forEach((arquivo) => URL.revokeObjectURL(arquivo.url));
     };
   }, [urlsPreview]);
+
+  useEffect(() => {
+    buscarCategorias().then(setCategorias).catch(console.error);
+  }, []);
 
   const handleFiles = (evento) => {
     const selecionados = Array.from(evento.target.files || []);
@@ -88,20 +96,33 @@ const Anunciar = () => {
     return proximosErros;
   };
 
-  const handleSubmit = (evento) => {
+  const handleSubmit = async (evento) => {
     evento.preventDefault();
+
     const proximosErros = validar();
     setErros(proximosErros);
-    if (Object.keys(proximosErros).length > 0) return;
 
-    console.log({
-      titulo,
-      categoria,
-      valor,
-      descricao,
-      fotos,
-    });
-    navigate("/");
+    if (Object.keys(proximosErros).length > 0) {
+      return;
+    }
+
+    try {
+      await criarAnuncio({
+        titulo,
+        categoria,
+        valor,
+        descricao,
+        fotos,
+      });
+
+      alert("Anúncio publicado com sucesso!");
+
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+
+      alert("Erro ao publicar anúncio.");
+    }
   };
 
   return (
@@ -151,7 +172,9 @@ const Anunciar = () => {
                           type="button"
                           className="anunciarRemove"
                           onClick={() =>
-                            setFotos((prev) => prev.filter((_, i) => i !== index))
+                            setFotos((prev) =>
+                              prev.filter((_, i) => i !== index),
+                            )
                           }
                           aria-label="Remover foto"
                         >
@@ -185,9 +208,12 @@ const Anunciar = () => {
                 className={erros.categoria ? "hasError" : ""}
               >
                 <option value="">Selecione</option>
-                <option value="eletricas">Ferramentas Eletricas</option>
-                <option value="manuais">Ferramentas Manuais</option>
-                <option value="jardinagem">Jardinagem</option>
+
+                {categorias.map((categoria) => (
+                  <option key={categoria.valor} value={categoria.valor}>
+                    {categoria.replaceAll("_", " ")}
+                  </option>
+                ))}
               </select>
               {erros.categoria ? (
                 <span className="anunciarError">{erros.categoria}</span>
