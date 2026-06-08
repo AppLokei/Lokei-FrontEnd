@@ -10,3 +10,8 @@ Thumbs.db
 .turbo/
 coverage/
 mockups/
+.impeccable/
+DESIGN.md
+PRODUCT.md
+lokei-context.md
+dist/

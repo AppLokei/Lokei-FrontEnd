@@ -5,61 +5,8 @@ import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import CardFerramenta from "../components/ToolCard";
 import BarraNavegacao from "../components/NavigationBar";
+import { listarAnuncios, mapearAnuncioParaCard } from "../apiServices";
 import "./Home.css";
-
-/* ── Dados mockados ── */
-const ferramentas = [
-  {
-    id: 1,
-    titulo: "Furadeira de Impacto",
-    localizacao: "Sao Paulo, SP",
-    preco: "R$ 45,00/dia",
-    valorDiario: 45,
-    categoria: "eletricas",
-    imagem:
-      "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 2,
-    titulo: "Serra Eletrica",
-    localizacao: "Campinas, SP",
-    preco: "R$ 60,00/dia",
-    valorDiario: 60,
-    categoria: "eletricas",
-    imagem:
-      "https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&w=800&q=80",
-  },
-  {
-    id: 3,
-    titulo: "Parafusadeira",
-    localizacao: "Santos, SP",
-    preco: "R$ 35,00/dia",
-    valorDiario: 35,
-    categoria: "eletricas",
-    imagem:
-      "https://images.pexels.com/photos/3877525/pexels-photo-3877525.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-  {
-    id: 4,
-    titulo: "Lixadeira Orbital",
-    localizacao: "Osasco, SP",
-    preco: "R$ 42,00/dia",
-    valorDiario: 42,
-    categoria: "manuais",
-    imagem:
-      "https://images.pexels.com/photos/5710754/pexels-photo-5710754.jpeg?auto=compress&cs=tinysrgb&w=800",
-  },
-  {
-    id: 5,
-    titulo: "Martelo Demolidor",
-    localizacao: "Guarulhos, SP",
-    preco: "R$ 90,00/dia",
-    valorDiario: 90,
-    categoria: "manuais",
-    imagem:
-      "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
-  },
-];
 
 const notificacoes = [
   {
@@ -91,6 +38,9 @@ const categorias = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const [ferramentas, setFerramentas] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
   /* ── Notificações ── */
   const [notificacoesAbertas, setNotificacoesAbertas] = useState(false);
   const notificacoesRef = useRef(null);
@@ -115,6 +65,22 @@ const Home = () => {
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const carregar = async () => {
+      try {
+        setCarregando(true);
+        const resposta = await listarAnuncios({ pagina: 0, tamanho: 12 });
+        setFerramentas(resposta.map(mapearAnuncioParaCard));
+      } catch (error) {
+        setErro(error.message);
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregar();
   }, []);
 
   const handleAplicarFiltros = () => {
@@ -236,7 +202,9 @@ const Home = () => {
             </Link>
           </div>
           <div className="homeGrid">
-            {itensFiltrados.length > 0 ? (
+            {carregando ? <p className="homeEmpty">Carregando anuncios...</p> : null}
+            {erro ? <p className="homeEmpty">{erro}</p> : null}
+            {!carregando && !erro && itensFiltrados.length > 0 ? (
               itensFiltrados.map((ferramenta) => (
                 <CardFerramenta
                   key={ferramenta.id}
@@ -264,7 +232,7 @@ const Home = () => {
             </Link>
           </div>
           <div className="homeGrid">
-            {itensFiltrados.length > 0 ? (
+            {!carregando && !erro && itensFiltrados.length > 0 ? (
               itensFiltrados.map((ferramenta) => (
                 <CardFerramenta
                   key={`promo-${ferramenta.id}`}

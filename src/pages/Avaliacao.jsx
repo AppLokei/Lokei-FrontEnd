@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Botao from "../components/Button";
+import { enviarAvaliacao } from "../apiServices";
 import "./Avaliacao.css";
 
 const aluguelMock = {
@@ -61,8 +62,9 @@ const Avaliacao = () => {
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
 
-    console.log({ nota, comentario });
-    setEnviado(true);
+    enviarAvaliacao({ nota, comentario, aluguelId: 1 })
+      .then(() => setEnviado(true))
+      .catch((error) => setErros({ submit: error.message }));
   };
 
   const handleBackdropClick = (evento) => {
@@ -155,6 +157,7 @@ const Avaliacao = () => {
               >
                 Cancelar
               </Botao>
+              {erros.submit ? <span className="avaliacaoError">{erros.submit}</span> : null}
             </form>
           </>
         )}

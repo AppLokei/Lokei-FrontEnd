@@ -4,10 +4,8 @@ import { useNavigate } from "react-router-dom";
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
+import { criarAnuncio } from "../services";
 import "./Anunciar.css";
-
-import { criarAnuncio } from "../services/anuncioService";
-import { buscarCategorias } from "../services/categoriaService";
 
 const MAX_FOTOS = 5;
 const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024;
@@ -16,7 +14,6 @@ const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 const Anunciar = () => {
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
-  const [categorias, setCategorias] = useState([]);
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [fotos, setFotos] = useState([]);
@@ -39,10 +36,6 @@ const Anunciar = () => {
       urlsPreview.forEach((arquivo) => URL.revokeObjectURL(arquivo.url));
     };
   }, [urlsPreview]);
-
-  useEffect(() => {
-    buscarCategorias().then(setCategorias).catch(console.error);
-  }, []);
 
   const handleFiles = (evento) => {
     const selecionados = Array.from(evento.target.files || []);
@@ -106,23 +99,15 @@ const Anunciar = () => {
       return;
     }
 
-    try {
-      await criarAnuncio({
-        titulo,
-        categoria,
-        valor,
-        descricao,
-        fotos,
-      });
-
-      alert("Anúncio publicado com sucesso!");
-
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-
-      alert("Erro ao publicar anúncio.");
-    }
+    criarAnuncio({
+      titulo,
+      descricao,
+      valorDiario: Number(valor.replace(",", ".")),
+      categoria,
+      imagens: fotos,
+    })
+      .then(() => navigate("/anuncios"))
+      .catch((error) => setErros({ submit: error.message }));
   };
 
   return (
@@ -208,12 +193,11 @@ const Anunciar = () => {
                 className={erros.categoria ? "hasError" : ""}
               >
                 <option value="">Selecione</option>
-
-                {categorias.map((categoria) => (
-                  <option key={categoria.valor} value={categoria.valor}>
-                    {categoria.replaceAll("_", " ")}
-                  </option>
-                ))}
+                <option value="FURADEIRAS_E_PARAFUSADEIRAS">Furadeiras e Parafusadeiras</option>
+                <option value="LIXADEIRAS">Lixadeiras</option>
+                <option value="SERRAS_E_MOTOSSERRAS">Serras e Motosserras</option>
+                <option value="MARTELOS">Marteletes e Martelos</option>
+                <option value="OUTROS">Outros</option>
               </select>
               {erros.categoria ? (
                 <span className="anunciarError">{erros.categoria}</span>
@@ -246,6 +230,7 @@ const Anunciar = () => {
             <div className="anunciarCtaBar">
               <Botao type="submit">Publicar Anuncio</Botao>
             </div>
+            {erros.submit ? <span className="anunciarError">{erros.submit}</span> : null}
           </form>
         </section>
 

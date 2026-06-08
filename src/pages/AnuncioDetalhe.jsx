@@ -1,41 +1,11 @@
-import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
+import { buscarAnuncioPorId, formatarMoeda } from "../apiServices";
 import "./AnuncioDetalhe.css";
-
-const anuncioMock = {
-  titulo: "Furadeira de Impacto Bosch",
-  localizacao: "Sao Paulo, SP",
-  diaria: 45,
-  semanal: 250,
-  mensal: 720,
-  descricao:
-    "Furadeira de impacto com alta potencia, ideal para obras e reparos. Inclui maleta, brocas e empunhadura lateral.",
-  locador: {
-    nome: "Marina Souza",
-    nota: 4.8,
-    totalAvaliacoes: 2,
-  },
-  avaliacoes: [
-    {
-      id: 1,
-      nome: "Carlos",
-      nota: 5,
-      texto: "Equipamento impecavel e entrega rapida.",
-    },
-    {
-      id: 2,
-      nome: "Renata",
-      nota: 4,
-      texto: "Ferramenta potente, recomendo.",
-    },
-  ],
-  imagem:
-    "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=1200&q=80",
-};
 
 const paraData = (valor) => {
   if (!valor) return null;
@@ -48,15 +18,16 @@ const diferencaEmDias = (dataInicio, dataFim) => {
   return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
 };
 
-const formatarMoeda = (valor) =>
-  `R$ ${valor.toFixed(2)}`.replace(".", ",");
-
 const AnuncioDetalhe = () => {
   const [souLocador] = useState(false);
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [erros, setErros] = useState({});
+  const [anuncio, setAnuncio] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState("");
   const navigate = useNavigate();
+  const { id } = useParams();
 
   const valorHoje = useMemo(() => {
     const today = new Date();
@@ -72,9 +43,27 @@ const AnuncioDetalhe = () => {
     if (!inicio || !fim) return null;
     const dias = diferencaEmDias(inicio, fim);
     if (Number.isNaN(dias) || dias <= 0) return null;
-    const total = dias * anuncioMock.diaria;
-    return `${dias} dias x ${formatarMoeda(anuncioMock.diaria)} = ${formatarMoeda(total)}`;
-  }, [dataInicio, dataFim]);
+    const diaria = Number(anuncio?.valorDiario ?? 0);
+    const total = dias * diaria;
+    return `${dias} dias x ${formatarMoeda(diaria)} = ${formatarMoeda(total)}`;
+  }, [dataInicio, dataFim, anuncio]);
+
+  useEffect(() => {
+    const carregar = async () => {
+      try {
+        setCarregando(true);
+        setErro("");
+        const resposta = await buscarAnuncioPorId(id);
+        setAnuncio(resposta);
+      } catch (error) {
+        setErro(error.message);
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregar();
+  }, [id]);
 
   const validar = () => {
     const proximosErros = {};
@@ -114,131 +103,128 @@ const AnuncioDetalhe = () => {
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
 
-    console.log({
-      anuncioId: 1,
-      dataInicio,
-      dataFim,
-    });
+    console.log({ anuncioId: id, dataInicio, dataFim });
   };
 
   return (
     <div className="detailPage">
       <BarraNavegacao />
       <div className="detailContainer">
-        <div className="detailContent">
-          <div className="detailMedia">
-            <img
-              src={anuncioMock.imagem}
-              alt={anuncioMock.titulo}
-              className="detailImage"
-            />
-          </div>
-
-          <div className="detailHeader">
-            <h1 className="detailTitle">{anuncioMock.titulo}</h1>
-            <p className="detailLocation">{anuncioMock.localizacao}</p>
-          </div>
-
-          <div className="detailSection">
-            <h2>Descricao</h2>
-            <p>{anuncioMock.descricao}</p>
-          </div>
-
-          <div className="detailSection detailOwner">
-            <div>
-              <h2>Locador</h2>
-              <p>{anuncioMock.locador.nome}</p>
-            </div>
-            <div className="detailOwnerRating">
-              <span>{anuncioMock.locador.nota} ★</span>
-              <span>{anuncioMock.locador.totalAvaliacoes} avaliacoes</span>
-            </div>
-          </div>
-
-          <div className="detailSection">
-            <h2>Avaliacoes</h2>
-            <div className="detailReviews">
-              {anuncioMock.avaliacoes.map((review) => (
-                <article key={review.id} className="detailReview">
-                  <div className="detailReviewHeader">
-                    <strong>{review.nome}</strong>
-                    <span>{review.nota} ★</span>
-                  </div>
-                  <p>{review.texto}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <aside className="detailBooking">
-          <div className="detailBookingCard">
-            <div className="detailPriceHero">
-              <span className="detailPriceLabel">Diaria</span>
-              <div className="detailPriceValue">
-                <span>R$</span>
-                <strong>{anuncioMock.diaria}</strong>
-                <small>/dia</small>
+        {carregando ? <p>Carregando anuncio...</p> : null}
+        {erro ? <p>{erro}</p> : null}
+        {anuncio ? (
+          <>
+            <div className="detailContent">
+              <div className="detailMedia">
+                <img
+                  src={anuncio.imagens?.[0] ?? ""}
+                  alt={anuncio.titulo}
+                  className="detailImage"
+                />
               </div>
-            </div>
 
-            {!souLocador ? (
+              <div className="detailHeader">
+                <h1 className="detailTitle">{anuncio.titulo}</h1>
+                <p className="detailLocation">Local nao informado</p>
+              </div>
+
               <div className="detailSection">
-                <h2>Selecione o periodo</h2>
-                <p className="detailPolicy">Limite de 30 dias</p>
-                <div className="detailDates">
-                  <CampoEntrada
-                    rotulo="Data de inicio"
-                    type="date"
-                    value={dataInicio}
-                    min={valorHoje}
-                    onChange={(evento) => setDataInicio(evento.target.value)}
-                    erro={erros.dataInicio}
-                  />
-                  <CampoEntrada
-                    rotulo="Data de fim"
-                    type="date"
-                    value={dataFim}
-                    min={dataInicio || valorHoje}
-                    onChange={(evento) => setDataFim(evento.target.value)}
-                    erro={erros.dataFim}
-                  />
+                <h2>Descricao</h2>
+                <p>{anuncio.descricao}</p>
+              </div>
+
+              <div className="detailSection detailOwner">
+                <div>
+                  <h2>Locador</h2>
+                  <p>Usuario do anuncio</p>
                 </div>
-                {resumoSelecao ? (
-                  <div className="detailSummary">{resumoSelecao}</div>
-                ) : null}
-                <Botao type="button" onClick={handleSubmit}>
-                  Solicitar Aluguel
-                </Botao>
-                <button
-                  className="detailChatLink"
-                  type="button"
-                  onClick={() => navigate("/chat")}
-                >
-                  Abrir Chat
-                </button>
+                <div className="detailOwnerRating">
+                  <span>4.8 ★</span>
+                  <span>0 avaliacoes</span>
+                </div>
               </div>
-            ) : (
-              <div className="detailSection">
-                <Botao type="button" onClick={() => navigate("/editar-anuncio")}>
-                  Editar anuncio
-                </Botao>
-              </div>
-            )}
 
-            <div className="detailSavings">
-              <h3>Economize</h3>
-              <div className="detailSavingsRow">
-                <span>Semana</span>
-                <strong>{formatarMoeda(anuncioMock.semanal)}</strong>
-              </div>
-              <div className="detailSavingsRow">
-                <span>Mes</span>
-                <strong>{formatarMoeda(anuncioMock.mensal)}</strong>
+              <div className="detailSection">
+                <h2>Avaliacoes</h2>
+                <div className="detailReviews">
+                  <p>
+                    As avaliacoes serao integradas depois que o backend expuser a
+                    listagem.
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </aside>
+
+            <aside className="detailBooking">
+              <div className="detailBookingCard">
+                <div className="detailPriceHero">
+                  <span className="detailPriceLabel">Diaria</span>
+                  <div className="detailPriceValue">
+                    <span>R$</span>
+                    <strong>{formatarMoeda(anuncio.valorDiario)}</strong>
+                    <small>/dia</small>
+                  </div>
+                </div>
+
+                {!souLocador ? (
+                  <div className="detailSection">
+                    <h2>Selecione o periodo</h2>
+                    <p className="detailPolicy">Limite de 30 dias</p>
+                    <div className="detailDates">
+                      <CampoEntrada
+                        rotulo="Data de inicio"
+                        type="date"
+                        value={dataInicio}
+                        min={valorHoje}
+                        onChange={(evento) => setDataInicio(evento.target.value)}
+                        erro={erros.dataInicio}
+                      />
+                      <CampoEntrada
+                        rotulo="Data de fim"
+                        type="date"
+                        value={dataFim}
+                        min={dataInicio || valorHoje}
+                        onChange={(evento) => setDataFim(evento.target.value)}
+                        erro={erros.dataFim}
+                      />
+                    </div>
+                    {resumoSelecao ? (
+                      <div className="detailSummary">{resumoSelecao}</div>
+                    ) : null}
+                    <Botao type="button" onClick={handleSubmit}>
+                      Solicitar Aluguel
+                    </Botao>
+                    <button
+                      className="detailChatLink"
+                      type="button"
+                      onClick={() => navigate("/chat")}
+                    >
+                      Abrir Chat
+                    </button>
+                  </div>
+                ) : (
+                  <div className="detailSection">
+                    <Botao type="button" onClick={() => navigate("/editar-anuncio")}>
+                      Editar anuncio
+                    </Botao>
+                  </div>
+                )}
+
+                <div className="detailSavings">
+                  <h3>Economize</h3>
+                  <div className="detailSavingsRow">
+                    <span>Semana</span>
+                    <strong>{formatarMoeda(Number(anuncio.valorDiario) * 7)}</strong>
+                  </div>
+                  <div className="detailSavingsRow">
+                    <span>Mes</span>
+                    <strong>{formatarMoeda(Number(anuncio.valorDiario) * 30)}</strong>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </>
+        ) : null}
       </div>
     </div>
   );

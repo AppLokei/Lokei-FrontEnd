@@ -4,41 +4,24 @@ import { useNavigate } from "react-router-dom";
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
+import { atualizarAnuncio, buscarAnuncioPorId } from "../apiServices";
 import "./EditarAnuncio.css";
-
 const MAX_FOTOS = 5;
 const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 
-/* Mock: dados atuais do anuncio */
-const anuncioMock = {
-  id: 1,
-  titulo: "Furadeira de Impacto Bosch",
-  categoria: "eletricas",
-  valor: "45,00",
-  descricao:
-    "Furadeira de impacto com alta potencia, ideal para obras e reparos. Inclui maleta, brocas e empunhadura lateral.",
-  fotosExistentes: [
-    {
-      nome: "furadeira-01.jpg",
-      url: "https://images.unsplash.com/photo-1572981779307-38b8cabb2407?auto=format&fit=crop&w=400&q=60",
-    },
-  ],
-  /* RN: se a ferramenta esta alugada, o preco nao pode ser alterado */
-  alugada: true,
-};
-
 const EditarAnuncio = () => {
-  const [titulo, setTitulo] = useState(anuncioMock.titulo);
-  const [categoria, setCategoria] = useState(anuncioMock.categoria);
-  const [valor, setValor] = useState(anuncioMock.valor);
-  const [descricao, setDescricao] = useState(anuncioMock.descricao);
-  const [fotosExistentes, setFotosExistentes] = useState(
-    anuncioMock.fotosExistentes
-  );
+  const [anuncioId] = useState(1);
+  const [titulo, setTitulo] = useState("");
+  const [categoria, setCategoria] = useState("");
+  const [valor, setValor] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [fotosExistentes, setFotosExistentes] = useState([]);
   const [fotosNovas, setFotosNovas] = useState([]);
   const [erros, setErros] = useState({});
+  const [carregando, setCarregando] = useState(true);
   const navigate = useNavigate();
+  const anuncioAlugado = false;
 
   const totalFotos = fotosExistentes.length + fotosNovas.length;
   const podeAdicionarMais = totalFotos < MAX_FOTOS;
@@ -53,10 +36,31 @@ const EditarAnuncio = () => {
   );
 
   useEffect(() => {
+    const carregar = async () => {
+      try {
+        const anuncio = await buscarAnuncioPorId(anuncioId);
+        if (anuncio) {
+          setTitulo(anuncio.titulo);
+          setDescricao(anuncio.descricao);
+          setValor(String(anuncio.valorDiario ?? "").replace(".", ","));
+          setFotosExistentes(
+            (anuncio.imagens ?? []).map((imagem, index) => ({
+              nome: `foto-${index + 1}`,
+              url: imagem,
+            }))
+          );
+        }
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    carregar();
+
     return () => {
       previewNovas.forEach((arquivo) => URL.revokeObjectURL(arquivo.url));
     };
-  }, [previewNovas]);
+  }, [previewNovas, anuncioId]);
 
   const handleFiles = (evento) => {
     const selecionados = Array.from(evento.target.files || []);
@@ -108,10 +112,8 @@ const EditarAnuncio = () => {
     if (!titulo.trim()) proximosErros.titulo = "Informe o titulo.";
     if (!categoria) proximosErros.categoria = "Selecione uma categoria.";
 
-    if (!anuncioMock.alugada) {
-      if (!valor.trim() || Number.isNaN(valorNumero) || valorNumero <= 0) {
-        proximosErros.valor = "O valor deve ser maior que R$ 0,00.";
-      }
+    if (!valor.trim() || Number.isNaN(valorNumero) || valorNumero <= 0) {
+      proximosErros.valor = "O valor deve ser maior que R$ 0,00.";
     }
 
     if (!descricao.trim()) proximosErros.descricao = "Informe a descricao.";
@@ -129,22 +131,21 @@ const EditarAnuncio = () => {
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
 
-    console.log({
-      id: anuncioMock.id,
+    atualizarAnuncio(anuncioId, {
       titulo,
       categoria,
-      valor,
+      valorDiario: Number(valor.replace(",", ".")),
       descricao,
-      fotosExistentes,
-      fotosNovas,
-    });
-    navigate("/anuncios/" + anuncioMock.id);
+    })
+      .then(() => navigate(`/anuncios/${anuncioId}`))
+      .catch((error) => setErros({ submit: error.message }));
   };
 
   return (
     <div className="editarAnuncioPage">
       <BarraNavegacao />
       <div className="editarAnuncioCard">
+        {carregando ? <p>Carregando anuncio...</p> : null}
         <header className="editarAnuncioHeader">
           <span className="editarAnuncioBadge">Editar anuncio</span>
           <h1>Atualize sua ferramenta</h1>
@@ -237,9 +238,11 @@ const EditarAnuncio = () => {
               className={erros.categoria ? "hasError" : ""}
             >
               <option value="">Selecione</option>
-              <option value="eletricas">Ferramentas Eletricas</option>
-              <option value="manuais">Ferramentas Manuais</option>
-              <option value="jardinagem">Jardinagem</option>
+              <option value="FURADEIRAS_E_PARAFUSADEIRAS">Furadeiras e Parafusadeiras</option>
+              <option value="LIXADEIRAS">Lixadeiras</option>
+              <option value="SERRAS_E_MOTOSSERRAS">Serras e Motosserras</option>
+              <option value="MARTELOS">Marteletes e Martelos</option>
+              <option value="OUTROS">Outros</option>
             </select>
             {erros.categoria ? (
               <span className="editarAnuncioError">{erros.categoria}</span>
@@ -255,9 +258,9 @@ const EditarAnuncio = () => {
               value={valor}
               onChange={(evento) => setValor(evento.target.value)}
               erro={erros.valor}
-              disabled={anuncioMock.alugada}
+              disabled={anuncioAlugado}
             />
-            {anuncioMock.alugada ? (
+            {anuncioAlugado ? (
               <span className="editarAnuncioHint">
                 O valor nao pode ser alterado enquanto a ferramenta esta alugada.
               </span>
@@ -286,6 +289,7 @@ const EditarAnuncio = () => {
           >
             Cancelar
           </Botao>
+          {erros.submit ? <span className="editarAnuncioError">{erros.submit}</span> : null}
         </form>
       </div>
     </div>
