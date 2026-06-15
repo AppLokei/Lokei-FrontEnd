@@ -138,8 +138,8 @@ export const removerImagemDoAnuncio = async (anuncioId, imagemId) =>
     method: "DELETE",
   });
 
-export const buscarAlugueisPorUsuario = async (identificador) => {
-  const data = await request(`/alugueis-por-usuario?identificador=${identificador}`);
+export const buscarAlugueisPorUsuario = async (identificador, pagina = 0, tamanho = 100) => {
+  const data = await request(`/alugueis-por-usuario?identificador=${identificador}&pagina=${pagina}&tamanho=${tamanho}`);
   return Array.isArray(data?.content) ? data.content : [];
 };
 
