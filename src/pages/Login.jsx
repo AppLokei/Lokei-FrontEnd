@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { login as loginService } from "../services/auth";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
@@ -10,6 +11,7 @@ const Login = () => {
   const [senha, setSenha] = useState("");
   const [mostrarSenha, setMostrarSenha] = useState(false);
   const [erros, setErros] = useState({});
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const validar = () => {
@@ -27,15 +29,31 @@ const Login = () => {
     return proximosErros;
   };
 
-  const handleSubmit = (evento) => {
+  const handleSubmit = async (evento) => {
     evento.preventDefault();
     const proximosErros = validar();
     setErros(proximosErros);
 
     if (Object.keys(proximosErros).length > 0) return;
 
-    console.log({ login, senha });
-    navigate("/");
+    try {
+      setLoading(true);
+      const data = await loginService(login, senha);
+
+      localStorage.setItem("lokei_user_id", data.id);
+      localStorage.setItem("lokei_email", data.email);
+      localStorage.setItem("lokei_nome", data.nome);
+      localStorage.setItem("lokei_telefone", data.telefone);
+      localStorage.setItem("lokei_cpf", data.cpf);
+      localStorage.setItem("lokei_role", data.role);
+
+      navigate("/");
+      window.location.reload(); // Para forçar atualização do menu de navegação com os dados reais
+    } catch (error) {
+      setErros({ geral: "E-mail ou senha incorretos." });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,6 +79,11 @@ const Login = () => {
           </header>
 
           <form className="loginForm" onSubmit={handleSubmit}>
+            {erros.geral && (
+              <div style={{ padding: "10px", background: "#ffebee", color: "#c62828", borderRadius: "8px", marginBottom: "15px", fontSize: "14px", fontWeight: "bold" }}>
+                {erros.geral}
+              </div>
+            )}
             <CampoEntrada
               rotulo="E-mail"
               name="login"
@@ -89,10 +112,9 @@ const Login = () => {
               }
             />
 
-            <Botao type="submit">Entrar</Botao>
-            <Link className="loginForgot" to="/esqueci-senha">
-              Esqueci minha senha
-            </Link>
+            <Botao type="submit" disabled={loading}>
+                {loading ? "Entrando..." : "Entrar"}
+            </Botao>
           </form>
 
           <div className="loginFooter">

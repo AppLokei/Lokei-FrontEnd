@@ -125,7 +125,7 @@ const Anunciar = () => {
 
           <form className="anunciarForm" onSubmit={handleSubmit}>
             <div className="anunciarUpload">
-              <label className="anunciarUploadLabel">Fotos (max. 5)</label>
+              <label className="anunciarUploadLabel">Fotos (max. 5) <span style={{ color: "red" }}>*</span></label>
               <div className="anunciarUploadArea">
                 <div>
                   <strong>Arraste ou selecione fotos</strong>
@@ -177,7 +177,7 @@ const Anunciar = () => {
             </div>
 
             <CampoEntrada
-              rotulo="Titulo"
+              rotulo={<>Titulo <span style={{ color: "red" }}>*</span></>}
               name="titulo"
               placeholder="Ex: Furadeira de impacto"
               value={titulo}
@@ -186,7 +186,7 @@ const Anunciar = () => {
             />
 
             <label className="anunciarSelectField">
-              <span>Categoria</span>
+              <span>Categoria <span style={{ color: "red" }}>*</span></span>
               <select
                 value={categoria}
                 onChange={(evento) => setCategoria(evento.target.value)}
@@ -205,7 +205,7 @@ const Anunciar = () => {
             </label>
 
             <CampoEntrada
-              rotulo="Valor do aluguel (R$)"
+              rotulo={<>Valor do aluguel (R$) <span style={{ color: "red" }}>*</span></>}
               name="valor"
               placeholder="0,00"
               value={valor}
@@ -214,7 +214,7 @@ const Anunciar = () => {
             />
 
             <label className="anunciarTextareaField">
-              <span>Descricao</span>
+              <span>Descricao <span style={{ color: "red" }}>*</span></span>
               <textarea
                 value={descricao}
                 onChange={(evento) => setDescricao(evento.target.value)}

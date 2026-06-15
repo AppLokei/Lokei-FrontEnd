@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 import CardFerramenta from "../components/ToolCard";
 import BarraNavegacao from "../components/NavigationBar";
-import { listarAnuncios, mapearAnuncioParaCard } from "../apiServices";
+import { listarAnuncios, mapearAnuncioParaCard } from "../services";
 import "./Anuncios.css";
 const Anuncios = () => {
   const [anuncios, setAnuncios] = useState([]);
@@ -16,7 +16,8 @@ const Anuncios = () => {
         setCarregando(true);
         setErro("");
         const resposta = await listarAnuncios({ pagina: 0, tamanho: 12 });
-        setAnuncios(resposta.map(mapearAnuncioParaCard));
+        const ativos = resposta.filter((a) => a.status === "ATIVO" || !a.status);
+        setAnuncios(ativos.map(mapearAnuncioParaCard));
       } catch (error) {
         setErro(error.message);
       } finally {

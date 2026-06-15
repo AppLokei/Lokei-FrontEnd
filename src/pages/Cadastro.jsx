@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
+import ConfirmationModal from "../components/ConfirmationModal";
 import "./Cadastro.css";
 
 const Cadastro = () => {
   const [nomeCompleto, setNomeCompleto] = useState("");
+  const [dataNascimento, setDataNascimento] = useState("");
   const [email, setEmail] = useState("");
   const [cpf, setCpf] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -14,6 +16,14 @@ const Cadastro = () => {
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [aceiteTermos, setAceiteTermos] = useState(false);
   const [erros, setErros] = useState({});
+  const [cep, setCep] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
+  const navigate = useNavigate();
 
   const formatarCpf = (valor) => {
     const digitos = valor.replace(/\D/g, "").slice(0, 11);
@@ -39,6 +49,10 @@ const Cadastro = () => {
 
     if (!nomeCompleto.trim()) {
       proximosErros.nomeCompleto = "Informe seu nome completo.";
+    }
+    
+    if (!dataNascimento.trim()) {
+      proximosErros.dataNascimento = "Informe sua data de nascimento.";
     }
 
     if (!email.includes("@")) {
@@ -66,27 +80,57 @@ const Cadastro = () => {
       proximosErros.aceiteTermos =
         "Voce precisa aceitar os Termos e Politica de Privacidade.";
     }
+    
+    if (!cep.trim()) proximosErros.cep = "Campo obrigatório.";
+    if (!logradouro.trim()) proximosErros.logradouro = "Campo obrigatório.";
+    if (!numero.trim()) proximosErros.numero = "Campo obrigatório.";
+    if (!bairro.trim()) proximosErros.bairro = "Campo obrigatório.";
+    if (!cidade.trim()) proximosErros.cidade = "Campo obrigatório.";
+    if (!estado.trim()) proximosErros.estado = "Campo obrigatório.";
 
     return proximosErros;
   };
 
-  const handleSubmit = (evento) => {
+  const [modalErroAberto, setModalErroAberto] = useState(false);
+  const [mensagemModalErro, setMensagemModalErro] = useState("");
+
+  const handleSubmit = async (evento) => {
     evento.preventDefault();
     const proximosErros = validar();
     setErros(proximosErros);
 
-    if (Object.keys(proximosErros).length > 0) return;
+    if (Object.keys(proximosErros).length > 0) {
+      setMensagemModalErro("Por favor, preencha corretamente todos os campos obrigatórios.");
+      setModalErroAberto(true);
+      return;
+    }
 
-    const cpfDigitos = cpf.replace(/\D/g, "");
-    console.log({
-      nomeCompleto,
-      email,
-      cpf: cpfDigitos,
-      telefone,
-      senha,
-      confirmarSenha,
-      aceiteTermos,
-    });
+    try {
+      // Simulate API call that might fail
+      const { cadastrarUsuario } = await import("../services");
+      const cpfDigitos = cpf.replace(/\D/g, "");
+      
+      await cadastrarUsuario({
+        nome: nomeCompleto,
+        email,
+        cpf: cpfDigitos,
+        telefone,
+        senha,
+        cep,
+        logradouro,
+        numero,
+        complemento,
+        bairro,
+        cidade,
+        estado
+      });
+      
+      alert("Cadastro realizado com sucesso! Faça login para continuar.");
+      navigate("/login");
+    } catch (err) {
+      setMensagemModalErro(err.message || "Ocorreu um erro inesperado ao tentar realizar o cadastro.");
+      setModalErroAberto(true);
+    }
   };
 
   return (
@@ -127,6 +171,16 @@ const Cadastro = () => {
                   value={nomeCompleto}
                   onChange={(evento) => setNomeCompleto(evento.target.value)}
                   erro={erros.nomeCompleto}
+                  obrigatorio
+                />
+                <CampoEntrada
+                  rotulo="Data de Nascimento"
+                  name="dataNascimento"
+                  type="date"
+                  value={dataNascimento}
+                  onChange={(evento) => setDataNascimento(evento.target.value)}
+                  erro={erros.dataNascimento}
+                  obrigatorio
                 />
                 <CampoEntrada
                   rotulo="E-mail"
@@ -136,6 +190,7 @@ const Cadastro = () => {
                   value={email}
                   onChange={(evento) => setEmail(evento.target.value)}
                   erro={erros.email}
+                  obrigatorio
                 />
                 <CampoEntrada
                   rotulo="CPF"
@@ -145,6 +200,7 @@ const Cadastro = () => {
                   onChange={handleCpfChange}
                   inputMode="numeric"
                   erro={erros.cpf}
+                  obrigatorio
                 />
                 <CampoEntrada
                   rotulo="Telefone"
@@ -153,6 +209,7 @@ const Cadastro = () => {
                   value={telefone}
                   onChange={(evento) => setTelefone(evento.target.value)}
                   erro={erros.telefone}
+                  obrigatorio
                 />
                 <CampoEntrada
                   rotulo="Senha"
@@ -162,6 +219,7 @@ const Cadastro = () => {
                   value={senha}
                   onChange={(evento) => setSenha(evento.target.value)}
                   erro={erros.senha}
+                  obrigatorio
                 />
                 <CampoEntrada
                   rotulo="Confirmar Senha"
@@ -171,6 +229,7 @@ const Cadastro = () => {
                   value={confirmarSenha}
                   onChange={(evento) => setConfirmarSenha(evento.target.value)}
                   erro={erros.confirmarSenha}
+                  obrigatorio
                 />
               </div>
             </div>
@@ -181,16 +240,16 @@ const Cadastro = () => {
                 <span className="cadastroSectionHint">Use o endereco para entregas e retiradas.</span>
               </div>
               <div className="cadastroFieldGroup">
-                <CampoEntrada rotulo="CEP" name="cep" placeholder="00000-000" />
-                <CampoEntrada rotulo="Logradouro" name="logradouro" placeholder="Rua, avenida" />
+                <CampoEntrada rotulo="CEP" name="cep" placeholder="00000-000" value={cep} onChange={(e) => setCep(e.target.value)} erro={erros.cep} obrigatorio />
+                <CampoEntrada rotulo="Logradouro" name="logradouro" placeholder="Rua, avenida" value={logradouro} onChange={(e) => setLogradouro(e.target.value)} erro={erros.logradouro} obrigatorio />
                 <div className="cadastroFieldRow">
-                  <CampoEntrada rotulo="Numero" name="numero" placeholder="Numero" />
-                  <CampoEntrada rotulo="Complemento" name="complemento" placeholder="Apartamento, bloco" />
+                  <CampoEntrada rotulo="Numero" name="numero" placeholder="Numero" value={numero} onChange={(e) => setNumero(e.target.value)} erro={erros.numero} obrigatorio />
+                  <CampoEntrada rotulo="Complemento" name="complemento" placeholder="Apartamento, bloco" value={complemento} onChange={(e) => setComplemento(e.target.value)} />
                 </div>
-                <CampoEntrada rotulo="Bairro" name="bairro" placeholder="Seu bairro" />
+                <CampoEntrada rotulo="Bairro" name="bairro" placeholder="Seu bairro" value={bairro} onChange={(e) => setBairro(e.target.value)} erro={erros.bairro} obrigatorio />
                 <div className="cadastroFieldRow">
-                  <CampoEntrada rotulo="Cidade" name="cidade" placeholder="Cidade" />
-                  <CampoEntrada rotulo="Estado" name="estado" placeholder="UF" />
+                  <CampoEntrada rotulo="Cidade" name="cidade" placeholder="Cidade" value={cidade} onChange={(e) => setCidade(e.target.value)} erro={erros.cidade} obrigatorio />
+                  <CampoEntrada rotulo="Estado" name="estado" placeholder="UF" value={estado} onChange={(e) => setEstado(e.target.value)} erro={erros.estado} obrigatorio />
                 </div>
               </div>
             </div>
@@ -220,6 +279,16 @@ const Cadastro = () => {
           </form>
         </section>
       </div>
+
+      <ConfirmationModal
+        aberto={modalErroAberto}
+        aoFechar={() => setModalErroAberto(false)}
+        aoConfirmar={() => setModalErroAberto(false)}
+        titulo="Erro no Cadastro"
+        descricao={mensagemModalErro}
+        textoConfirmar="Entendi"
+        varianteConfirmar="outlineRed"
+      />
     </div>
   );
 };

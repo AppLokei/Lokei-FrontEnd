@@ -163,3 +163,61 @@
     color: var(--color-grafite-escuro);
   }
 }
+
+/* Role Selector Styles */
+.navControls {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  z-index: 1000;
+  background: var(--color-branco-brilhante);
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(24, 24, 24, 0.1);
+  border: 1px solid var(--color-warm-border);
+  padding: 6px 12px;
+}
+
+.roleSelectorLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.roleSelectorText {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-cinza-texto);
+  text-transform: uppercase;
+}
+
+.roleSelectorSelect {
+  border: none;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-grafite-escuro);
+  outline: none;
+  font-family: inherit;
+  padding-right: 4px;
+}
+
+@media (min-width: 900px) {
+  .navControls {
+    position: static;
+    box-shadow: none;
+    border: 1px solid oklch(80.4% 0.156 82.5 / 0.25);
+    background: oklch(98% 0.01 90);
+    padding: 8px 16px;
+    border-radius: 14px;
+  }
+  
+  .roleSelectorText {
+    font-size: 0.8rem;
+  }
+  
+  .roleSelectorSelect {
+    font-size: 0.9rem;
+  }
+}
+
