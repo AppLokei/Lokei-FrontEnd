@@ -59,10 +59,23 @@ export const listarAnuncios = async (filtros = {}) => {
   return Array.isArray(data?.content) ? data.content : [];
 };
 
-export const buscarAnuncioPorId = async (id) => {
-  const anuncios = await listarAnuncios({ tamanho: 1000 });
-  return anuncios.find((anuncio) => String(anuncio.id) === String(id)) ?? null;
+export const buscarAnuncioPorId = async (id, usuarioId) => {
+  const params = new URLSearchParams();
+  if (usuarioId !== undefined && usuarioId !== null && `${usuarioId}`.trim() !== "") {
+    params.set("usuarioId", usuarioId);
+  }
+  const query = params.toString();
+  return request(`/anuncios/${id}${query ? `?${query}` : ""}`);
 };
+
+export const consultarDisponibilidade = async (id) =>
+  request(`/anuncios/${id}/disponibilidade`);
+
+export const solicitarAluguel = async (id, { usuarioId, dataInicio, dataFim }) =>
+  request(`/anuncios/${id}/reservas`, {
+    method: "POST",
+    body: JSON.stringify({ usuarioId, dataInicio, dataFim }),
+  });
 
 const criarPayloadAnuncio = ({ titulo, descricao, valorDiario, categoria }) => ({
   titulo,

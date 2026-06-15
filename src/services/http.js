@@ -28,7 +28,7 @@ export const request = async (path, options = {}) => {
 
   if (!response.ok) {
     const message =
-      (body && typeof body === "object" && (body.message || body.error || body.erro)) ||
+      (body && typeof body === "object" && (body.mensagem || body.message || body.error || body.erro)) ||
       (typeof body === "string" ? body : null) ||
       `Erro na requisicao (${response.status})`;
 

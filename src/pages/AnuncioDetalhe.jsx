@@ -5,7 +5,7 @@ import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
 import ConfirmationModal from "../components/ConfirmationModal";
-import { buscarAnuncioPorId, formatarMoeda, desativarAnuncio, iniciarChat, pausarAnuncio, reativarAnuncio } from "../services";
+import { buscarAnuncioPorId, formatarMoeda, desativarAnuncio, iniciarChat, pausarAnuncio, reativarAnuncio, consultarDisponibilidade, solicitarAluguel } from "../services";
 import "./AnuncioDetalhe.css";
 
 const paraData = (valor) => {
@@ -28,6 +28,7 @@ const AnuncioDetalhe = () => {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   const [locadorDados, setLocadorDados] = useState(null);
+  const [periodosReservados, setPeriodosReservados] = useState([]);
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -81,20 +82,24 @@ const AnuncioDetalhe = () => {
     const fetchAnuncio = async () => {
       try {
         setCarregando(true);
-        const data = await buscarAnuncioPorId(id);
+        const usuarioLogadoId = localStorage.getItem("lokei_user_id");
+        const data = await buscarAnuncioPorId(id, usuarioLogadoId);
         if (!data) throw new Error("Anúncio não encontrado");
-        
+
         if (mounted) {
           setAnuncio(data);
-          
-          if (data.usuarioId) {
-            fetch(`/api/usuarios/${data.usuarioId}`)
-              .then(res => res.ok ? res.json() : null)
-              .then(userData => {
-                if (mounted && userData) setLocadorDados(userData);
-              })
-              .catch(err => console.error("Erro ao buscar locador", err));
+
+          if (data.proprietario) {
+            setLocadorDados(data.proprietario);
           }
+
+          consultarDisponibilidade(id)
+            .then((disponibilidade) => {
+              if (mounted && disponibilidade) {
+                setPeriodosReservados(disponibilidade.periodosReservados ?? []);
+              }
+            })
+            .catch((err) => console.error("Erro ao consultar disponibilidade", err));
         }
       } catch (err) {
         if (mounted) setErro(err.message);
@@ -135,6 +140,19 @@ const AnuncioDetalhe = () => {
       }
     }
 
+    if (inicio && fim) {
+      const haSobreposicao = periodosReservados.some((periodo) => {
+        const pInicio = paraData(periodo.dataInicio);
+        const pFim = paraData(periodo.dataFim);
+        if (!pInicio || !pFim) return false;
+        return inicio <= pFim && fim >= pInicio;
+      });
+
+      if (haSobreposicao) {
+        proximosErros.dataInicio = "Este periodo ja esta reservado. Escolha outras datas.";
+      }
+    }
+
     return proximosErros;
   };
 
@@ -161,24 +179,14 @@ const AnuncioDetalhe = () => {
   };
 
   const confirmarSolicitacao = async () => {
-    const inicio = paraData(dataInicio);
-    const fim = paraData(dataFim);
-
     const locatarioId = Number(localStorage.getItem("lokei_user_id") || 1);
     const locadorId = Number(anuncio.usuarioId);
 
-    const diferencaDias = diferencaEmDias(inicio, fim);
-    const valorTotal = diferencaDias * Number(anuncio.valorDiario || 0);
-
     try {
-      // Import criarAluguel dynamically or make sure it's imported at the top
-      const { criarAluguel } = await import("../services");
-      await criarAluguel({
-        locatarioId,
-        anuncioId: Number(id),
-        dataInicio: inicio.toISOString(),
-        dataFim: fim.toISOString(),
-        valorTotal
+      await solicitarAluguel(id, {
+        usuarioId: locatarioId,
+        dataInicio,
+        dataFim,
       });
 
       adicionarNotificacao(locatarioId, `Você enviou uma solicitação de aluguel para: ${anuncio.titulo}`, "message");
@@ -187,6 +195,7 @@ const AnuncioDetalhe = () => {
       setModalSolicitarAberto(false);
       setModalSucessoAberto(true);
     } catch (err) {
+      setModalSolicitarAberto(false);
       alert(`Erro ao solicitar aluguel: ${err.message}`);
     }
   };
@@ -298,7 +307,11 @@ const AnuncioDetalhe = () => {
               </div>
               <div className="anuncioLocadorInfo">
                 <h3>{locadorDados ? locadorDados.nome : (Number(anuncio.usuarioId) === 2 ? "Outro Teste" : "Usuário Teste")}</h3>
-                <span className="anuncioLocadorAvaliacao">★ 5.0 (Mockado)</span>
+                <span className="anuncioLocadorAvaliacao">
+                  {anuncio.totalAvaliacoes > 0
+                    ? `★ ${Number(anuncio.notaMedia).toFixed(1)} (${anuncio.totalAvaliacoes} ${anuncio.totalAvaliacoes === 1 ? "avaliação" : "avaliações"})`
+                    : "Sem avaliações"}
+                </span>
               </div>
             </div>
             </div>
