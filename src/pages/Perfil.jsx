@@ -5,6 +5,21 @@ import "./Perfil.css";
 
 const Perfil = () => {
   const navigate = useNavigate();
+  const nome = localStorage.getItem("lokei_nome") || "Usuário Teste";
+  const role = localStorage.getItem("lokei_role") || "locatario";
+
+  const getIniciais = (nomeCompleto) => {
+    const partes = nomeCompleto.split(" ").filter(Boolean);
+    if (partes.length === 0) return "U";
+    if (partes.length === 1) return partes[0].slice(0, 2).toUpperCase();
+    return (partes[0][0] + partes[partes.length - 1][0]).toUpperCase();
+  };
+
+  const getRoleLabel = (r) => {
+    if (r === "admin") return "Administrador";
+    if (r === "locador") return "Locador";
+    return "Locatário";
+  };
 
   return (
     <div className="perfilPage">
@@ -13,18 +28,17 @@ const Perfil = () => {
         <header className="perfilHero">
           <div className="perfilIdentity">
             <div className="perfilAvatar">
-              <span className="perfilAvatarInitials">JS</span>
+              <span className="perfilAvatarInitials">{getIniciais(nome)}</span>
             </div>
             <div className="perfilIdentityText">
-              <div className="perfilNameRow">
-                <h1 className="perfilName">Joao Souza</h1>
+              <div className="perfilNameRow" style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <h1 className="perfilName" style={{ margin: 0 }}>{nome}</h1>
               </div>
               <div className="perfilMeta">
                 <span className="perfilRating">
                   <strong>4.9</strong>
                   <span className="perfilStars">★★★★★</span>
                 </span>
-                <span className="perfilSince">Na Lokei desde Jan 2024</span>
               </div>
             </div>
           </div>

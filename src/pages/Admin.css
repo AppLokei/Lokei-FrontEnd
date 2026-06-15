@@ -1,0 +1,273 @@
+.adminPage {
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--color-bege-areia) 0%, var(--color-marfim-matizado) 55%, var(--color-branco-calmo) 100%);
+  padding: 32px 20px 120px;
+  font-family: "Manrope", "Poppins", sans-serif;
+}
+
+.adminContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.adminHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.adminBadge {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-ocre-acao-escuro);
+  background: var(--color-amarelo-suave);
+  padding: 4px 10px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.adminHeader h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--color-grafite-escuro);
+  margin: 0;
+}
+
+.adminHeader p {
+  color: var(--color-cinza-texto);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Alerts */
+.adminAlert {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  animation: adminSlideDown 0.2s ease;
+}
+
+.adminAlert--sucesso {
+  background: var(--color-verde-sucesso-tinta);
+  color: var(--color-verde-sucesso);
+  border: 1px solid oklch(51.6% 0.128 144.6 / 0.2);
+}
+
+.adminAlert--erro {
+  background: var(--color-vermelho-suave);
+  color: var(--color-vermelho-alerta);
+  border: 1px solid oklch(59.7% 0.182 24.5 / 0.2);
+}
+
+.adminAlertClose {
+  background: transparent;
+  border: none;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.adminAlertClose:hover {
+  opacity: 1;
+}
+
+/* Main Content */
+.adminContent h2 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-grafite-escuro);
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.adminLoading {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-cinza-texto);
+}
+
+/* Empty State */
+.adminEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--color-branco-brilhante);
+  border-radius: 24px;
+  border: 1px solid var(--color-warm-border);
+  box-shadow: 0 10px 30px rgba(24, 24, 24, 0.04);
+}
+
+.adminEmptyIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--color-verde-sucesso-tinta);
+  color: var(--color-verde-sucesso);
+  font-size: 1.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.adminEmpty h3 {
+  font-size: 1.15rem;
+  color: var(--color-grafite-escuro);
+  margin-bottom: 8px;
+}
+
+.adminEmpty p {
+  color: var(--color-cinza-texto);
+  font-size: 0.9rem;
+}
+
+/* Cards Grid */
+.adminGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+@media (min-width: 768px) {
+  .adminGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.adminCard {
+  background: var(--color-branco-brilhante);
+  border-radius: 20px;
+  border: 1px solid var(--color-warm-border);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: 0 8px 25px rgba(24, 24, 24, 0.04);
+  transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+}
+
+.adminCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(24, 24, 24, 0.08);
+}
+
+.adminCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adminCardReason {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-vermelho-alerta);
+  background: var(--color-vermelho-suave);
+  padding: 4px 10px;
+  border-radius: 8px;
+}
+
+.adminCardId {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-cinza-texto);
+}
+
+.adminCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+}
+
+.adminCardDesc {
+  font-size: 0.92rem;
+  color: var(--color-grafite-escuro);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.adminCardMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: var(--color-cinza-texto);
+  border-top: 1px solid var(--color-cinza-borda-suave);
+  padding-top: 12px;
+}
+
+.adminCardMeta span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.adminCardFooter {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.adminBtn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease-out, color 0.15s ease-out, border-color 0.15s ease-out;
+  border: none;
+  font-family: inherit;
+}
+
+.adminBtn--recusar {
+  background: var(--color-branco-calmo);
+  border: 1px solid var(--color-cinza-borda);
+  color: var(--color-cinza-texto);
+}
+
+.adminBtn--recusar:hover {
+  background: var(--color-cinza-fundo);
+  color: var(--color-grafite-escuro);
+  border-color: var(--color-cinza-texto);
+}
+
+.adminBtn--aprovar {
+  background: var(--color-vermelho-alerta);
+  color: var(--color-branco-calmo);
+}
+
+.adminBtn--aprovar:hover {
+  background: var(--color-vermelho-alerta-escuro);
+}
+
+@keyframes adminSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 900px) {
+  .adminPage {
+    padding: 110px 40px 80px;
+  }
+}

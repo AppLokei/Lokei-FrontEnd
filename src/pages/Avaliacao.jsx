@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import Botao from "../components/Button";
-import { enviarAvaliacao } from "../apiServices";
+import { enviarAvaliacao } from "../services";
 import "./Avaliacao.css";
 
 const aluguelMock = {
@@ -48,6 +48,9 @@ const Avaliacao = () => {
   const [erros, setErros] = useState({});
   const [enviado, setEnviado] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const aluguel = location.state?.aluguel || aluguelMock;
 
   const validar = () => {
     const proximosErros = {};
@@ -96,14 +99,14 @@ const Avaliacao = () => {
             {/* Resumo minimalista de leitura */}
             <div className="avaliacaoResumo">
               <img
-                src={aluguelMock.imagem}
-                alt={aluguelMock.titulo}
+                src={aluguel.imagem}
+                alt={aluguel.titulo}
                 className="avaliacaoResumoImage"
               />
               <div className="avaliacaoResumoInfo">
-                <strong>{aluguelMock.titulo}</strong>
-                <span>Locador: {aluguelMock.locador}</span>
-                <span>Período: {aluguelMock.periodo}</span>
+                <strong>{aluguel.titulo}</strong>
+                <span>Locador: {aluguel.locador || "Marina Souza"}</span>
+                <span>Período: {aluguel.periodo}</span>
               </div>
             </div>
 

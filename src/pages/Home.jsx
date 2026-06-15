@@ -5,45 +5,46 @@ import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import CardFerramenta from "../components/ToolCard";
 import BarraNavegacao from "../components/NavigationBar";
-import { listarAnuncios, mapearAnuncioParaCard } from "../apiServices";
+import { listarAnuncios, mapearAnuncioParaCard } from "../services";
 import "./Home.css";
 
-const notificacoes = [
-  {
-    id: 1,
-    texto: "Sua reserva da Furadeira foi aprovada!",
-    hora: "Agora",
-    tipo: "success",
-  },
-  {
-    id: 2,
-    texto: "Nova mensagem de Mariana Silva",
-    hora: "5 min",
-    tipo: "message",
-  },
-  {
-    id: 3,
-    texto: "A reserva da Serra Eletrica foi cancelada",
-    hora: "1h",
-    tipo: "alert",
-  },
-];
 
 const categorias = [
-  { id: "eletricas", nome: "Eletricas", icon: "⚡" },
-  { id: "manuais", nome: "Manuais", icon: "🛠️" },
-  { id: "jardinagem", nome: "Jardinagem", icon: "🌿" },
-  { id: "pintura", nome: "Pintura", icon: "🎨" },
+  { id: "FURADEIRAS_E_PARAFUSADEIRAS", nome: "Furadeiras", icon: "⚡" },
+  { id: "LIXADEIRAS", nome: "Lixadeiras", icon: "🛠️" },
+  { id: "SERRAS_E_MOTOSSERRAS", nome: "Serras", icon: "🪚" },
+  { id: "MARTELOS", nome: "Martelos", icon: "🔨" },
 ];
 
 const Home = () => {
   const navigate = useNavigate();
   const [ferramentas, setFerramentas] = useState([]);
+  const [busca, setBusca] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
   /* ── Notificações ── */
   const [notificacoesAbertas, setNotificacoesAbertas] = useState(false);
+  const [notificacoes, setNotificacoes] = useState([]);
   const notificacoesRef = useRef(null);
+  
+  const userId = localStorage.getItem("lokei_user_id") || "1";
+
+  useEffect(() => {
+    const list = JSON.parse(localStorage.getItem(`lokei_notificacoes_${userId}`) || "[]");
+    setNotificacoes(list);
+  }, [userId]);
+
+  const notificacoesNaoLidas = notificacoes.filter((n) => !n.lido && n.tipo !== "message").length;
+
+  const handleToggleNotificacoes = () => {
+    const novaAberta = !notificacoesAbertas;
+    setNotificacoesAbertas(novaAberta);
+    if (novaAberta && notificacoes.some((n) => !n.lido && n.tipo !== "message")) {
+      const atualizadas = notificacoes.map((n) => (n.tipo !== "message" ? { ...n, lido: true } : n));
+      setNotificacoes(atualizadas);
+      localStorage.setItem(`lokei_notificacoes_${userId}`, JSON.stringify(atualizadas));
+    }
+  };
 
   /* ── Filtros ── */
   const [filtrosAbertos, setFiltrosAbertos] = useState(false);
@@ -71,8 +72,16 @@ const Home = () => {
     const carregar = async () => {
       try {
         setCarregando(true);
-        const resposta = await listarAnuncios({ pagina: 0, tamanho: 12 });
-        setFerramentas(resposta.map(mapearAnuncioParaCard));
+        const resposta = await listarAnuncios({
+          pagina: 0,
+          tamanho: 12,
+          titulo: busca,
+          categoria: filtrosAtivos.categoria,
+          valorMin: filtrosAtivos.valorMin,
+          valorMax: filtrosAtivos.valorMax,
+        });
+        const ativos = resposta.filter((a) => a.status === "ATIVO" || !a.status);
+        setFerramentas(ativos.map(mapearAnuncioParaCard));
       } catch (error) {
         setErro(error.message);
       } finally {
@@ -80,8 +89,12 @@ const Home = () => {
       }
     };
 
-    carregar();
-  }, []);
+    const timeoutId = setTimeout(() => {
+      carregar();
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [busca, filtrosAtivos]);
 
   const handleAplicarFiltros = () => {
     setFiltrosAtivos({ categoria, valorMin, valorMax });
@@ -96,25 +109,32 @@ const Home = () => {
   };
 
   /* ── Filtragem dos cards ── */
-  const itensFiltrados = ferramentas.filter((ferramenta) => {
-    if (filtrosAtivos.categoria && ferramenta.categoria !== filtrosAtivos.categoria) {
-      return false;
-    }
-    if (filtrosAtivos.valorMin && ferramenta.valorDiario < Number(filtrosAtivos.valorMin)) {
-      return false;
-    }
-    if (filtrosAtivos.valorMax && ferramenta.valorDiario > Number(filtrosAtivos.valorMax)) {
-      return false;
-    }
-    return true;
-  });
+  const itensFiltrados = ferramentas;
 
   return (
     <div className="homePage">
       <div className="homeContent">
+        <section className="homeHero">
+          <h1>Equipamentos ideais, perto de você.</h1>
+          <p>Alugue o que precisa. Empreste o que não usa. Economize sempre.</p>
+        </section>
+
         <header className="homeSearchHeader">
-          <div className="homeSearchField">
-            <CampoEntrada rotulo="Buscar" placeholder="Buscar ferramentas..." />
+          <div className="homeSearchField" style={{ display: "flex", flex: 1 }}>
+            <CampoEntrada
+              rotulo="Buscar"
+              placeholder="Buscar ferramentas..."
+              value={busca}
+              onChange={(evento) => setBusca(evento.target.value)}
+              acao={
+                <button type="button" style={{ border: "none", background: "var(--color-amarelo-acao)", width: "32px", height: "32px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "var(--color-grafite-escuro)" }}>
+                  <svg viewBox="0 0 24 24" aria-hidden="true" width="18" height="18" style={{ fill: "none", stroke: "currentColor", strokeWidth: 2 }}>
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                  </svg>
+                </button>
+              }
+            />
           </div>
           <div className="homeSearchActions">
             <div className="homeNotifWrapper" ref={notificacoesRef}>
@@ -122,42 +142,65 @@ const Home = () => {
                 className="homeIconButton"
                 type="button"
                 aria-label="Notificacoes"
-                onClick={() => setNotificacoesAbertas((prev) => !prev)}
+                onClick={handleToggleNotificacoes}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 3a5 5 0 0 0-5 5v3.2l-1.5 2.6A1 1 0 0 0 6.4 15h11.2a1 1 0 0 0 .9-1.2L17 11.2V8a5 5 0 0 0-5-5zm0 18a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z" />
                 </svg>
-                <span className="homeNotifBadge">{notificacoes.length}</span>
+                {notificacoesNaoLidas > 0 ? (
+                  <span className="homeNotifBadge">{notificacoesNaoLidas}</span>
+                ) : null}
               </button>
 
               {notificacoesAbertas ? (
-                <div className="homeNotifDropdown">
-                  <div className="homeNotifHeader">
-                    <strong>Notificacoes</strong>
-                    <span>{notificacoes.length} novas</span>
+                <>
+                  <div className="homeNotifOverlayMobile" onClick={() => setNotificacoesAbertas(false)}></div>
+                  <div className="homeNotifDropdown">
+                    <div className="homeNotifHeader" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <strong>Notificacoes</strong>
+                      <span style={{ marginLeft: "5px" }}>{notificacoes.length} total</span>
+                    </div>
+                    {notificacoes.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          localStorage.setItem(`lokei_notificacoes_${userId}`, "[]");
+                          setNotificacoes([]);
+                        }}
+                        style={{ background: "none", border: "none", color: "var(--color-primary, #e6b121)", cursor: "pointer", fontSize: "0.8rem", fontWeight: "bold" }}
+                      >
+                        Limpar
+                      </button>
+                    )}
                   </div>
                   <ul className="homeNotifList">
-                    {notificacoes.map((notificacao) => (
-                      <li key={notificacao.id} className="homeNotifItem">
-                        <span className={`homeNotifIcon homeNotifIcon--${notificacao.tipo}`}>
-                          {notificacao.tipo === "success" && (
-                            <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                          )}
-                          {notificacao.tipo === "message" && (
-                            <svg viewBox="0 0 24 24"><path d="M4 6a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H9l-5 4v-4a3 3 0 0 1-3-3z" /></svg>
-                          )}
-                          {notificacao.tipo === "alert" && (
-                            <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z" /></svg>
-                          )}
-                        </span>
-                        <div className="homeNotifText">
-                          <p>{notificacao.texto}</p>
-                          <span>{notificacao.hora}</span>
-                        </div>
+                    {notificacoes.filter(n => n.tipo !== "message").length > 0 ? (
+                      notificacoes.filter(n => n.tipo !== "message").map((notificacao) => (
+                        <li key={notificacao.id} className="homeNotifItem">
+                          <span className={`homeNotifIcon homeNotifIcon--${notificacao.tipo}`}>
+                            {notificacao.tipo === "success" && (
+                              <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                            )}
+                            {notificacao.tipo === "alert" && (
+                              <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z" /></svg>
+                            )}
+                          </span>
+                          <div className="homeNotifText">
+                            <p>{notificacao.texto}</p>
+                            <span>{notificacao.hora}</span>
+                          </div>
+                        </li>
+                      ))
+                    ) : (
+                      <li className="homeNotifItem" style={{ justifyContent: "center", padding: "15px", color: "gray" }}>
+                        Nenhuma nova notificação
                       </li>
-                    ))}
+                    )}
                   </ul>
-                </div>
+                  
+                  </div>
+                </>
               ) : null}
             </div>
             <button
@@ -183,7 +226,11 @@ const Home = () => {
                 key={item.id}
                 className={`homeCategoryCard${categoria === item.id ? " is-active" : ""}`}
                 type="button"
-                onClick={() => setCategoria(item.id)}
+                onClick={() => {
+                  const novaCat = categoria === item.id ? "" : item.id;
+                  setCategoria(novaCat);
+                  setFiltrosAtivos((prev) => ({ ...prev, categoria: novaCat }));
+                }}
               >
                 <span className="homeCategoryIcon" aria-hidden="true">
                   {item.icon}
@@ -283,12 +330,14 @@ const Home = () => {
                 <select
                   className="homeFilterSelect"
                   value={categoria}
-                onChange={(evento) => setCategoria(evento.target.value)}
-              >
+                  onChange={(evento) => setCategoria(evento.target.value)}
+                >
                   <option value="">Todas</option>
-                  <option value="eletricas">Ferramentas Eletricas</option>
-                  <option value="manuais">Ferramentas Manuais</option>
-                  <option value="jardinagem">Jardinagem</option>
+                  <option value="FURADEIRAS_E_PARAFUSADEIRAS">Furadeiras e Parafusadeiras</option>
+                  <option value="LIXADEIRAS">Lixadeiras</option>
+                  <option value="SERRAS_E_MOTOSSERRAS">Serras e Motosserras</option>
+                  <option value="MARTELOS">Marteletes e Martelos</option>
+                  <option value="OUTROS">Outros</option>
                 </select>
               </label>
 

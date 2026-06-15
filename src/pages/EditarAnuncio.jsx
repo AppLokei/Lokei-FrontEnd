@@ -1,17 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
-import { atualizarAnuncio, buscarAnuncioPorId } from "../apiServices";
+import { atualizarAnuncio, buscarAnuncioPorId } from "../services";
 import "./EditarAnuncio.css";
 const MAX_FOTOS = 5;
 const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 
 const EditarAnuncio = () => {
-  const [anuncioId] = useState(1);
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const queryId = queryParams.get("id");
+  const [anuncioId] = useState(queryId || "1");
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
   const [valor, setValor] = useState("");

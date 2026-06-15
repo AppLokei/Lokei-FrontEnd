@@ -1,4 +1,4 @@
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8080";
+const API_URL = "/api";
 
 const parseBody = async (response) => {
   if (response.status === 204) return null;
@@ -14,10 +14,12 @@ const parseBody = async (response) => {
 };
 
 export const request = async (path, options = {}) => {
+  const userId = localStorage.getItem("lokei_user_id");
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(userId ? { "X-User-Id": userId } : {}),
       ...(options.headers ?? {}),
     },
   });
@@ -26,7 +28,7 @@ export const request = async (path, options = {}) => {
 
   if (!response.ok) {
     const message =
-      (body && typeof body === "object" && (body.message || body.error)) ||
+      (body && typeof body === "object" && (body.message || body.error || body.erro)) ||
       (typeof body === "string" ? body : null) ||
       `Erro na requisicao (${response.status})`;
 

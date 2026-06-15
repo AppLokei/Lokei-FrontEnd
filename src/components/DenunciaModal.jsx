@@ -2,21 +2,24 @@ import { useState } from "react";
 
 import CampoEntrada from "./Input";
 import Botao from "./Button";
+import ConfirmationModal from "./ConfirmationModal";
+import { criarDenuncia } from "../services";
 import "./DenunciaModal.css";
 
 const motivos = [
-  "Ferramenta danificada",
-  "Nao entregou no prazo",
-  "Descricao falsa",
-  "Comportamento inadequado",
-  "Outro",
+  { valor: "ANUNCIO_FALSO", texto: "Anúncio Falso / Golpe" },
+  { valor: "DESACORDO_POLITICAS", texto: "Desacordo com as Políticas" },
+  { valor: "DISCRIMINACAO", texto: "Discriminação / Ofensa" },
+  { valor: "FERRAMENTA_DIFERENTE", texto: "Ferramenta Diferente do Anúncio" },
 ];
 
-const ModalDenuncia = ({ aberto, aoFechar }) => {
+const ModalDenuncia = ({ aberto, aoFechar, anuncioId = 1 }) => {
   const [motivo, setMotivo] = useState("");
   const [descricao, setDescricao] = useState("");
   const [imagens, setImagens] = useState([]);
   const [erros, setErros] = useState({});
+  const [enviando, setEnviando] = useState(false);
+  const [confirmarAberto, setConfirmarAberto] = useState(false);
 
   if (!aberto) return null;
 
@@ -41,8 +44,31 @@ const ModalDenuncia = ({ aberto, aoFechar }) => {
     const proximosErros = validar();
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
-    console.log({ motivo, descricao, imagens });
-    aoFechar();
+
+    setConfirmarAberto(true);
+  };
+
+  const realizarEnvio = async () => {
+    try {
+      setEnviando(true);
+      const userLoggedId = Number(localStorage.getItem("lokei_user_id") || 1);
+      await criarDenuncia(anuncioId, {
+        denuncianteId: userLoggedId,
+        motivo,
+        descricao,
+      });
+      alert("Denúncia enviada com sucesso!");
+      setMotivo("");
+      setDescricao("");
+      setImagens([]);
+      setConfirmarAberto(false);
+      aoFechar();
+    } catch (error) {
+      setErros({ submit: error.message });
+      setConfirmarAberto(false);
+    } finally {
+      setEnviando(false);
+    }
   };
 
   return (
@@ -82,8 +108,8 @@ const ModalDenuncia = ({ aberto, aoFechar }) => {
             >
               <option value="">Selecione um motivo</option>
               {motivos.map((m) => (
-                <option key={m} value={m}>
-                  {m}
+                <option key={m.valor} value={m.valor}>
+                  {m.texto}
                 </option>
               ))}
             </select>
@@ -151,14 +177,25 @@ const ModalDenuncia = ({ aberto, aoFechar }) => {
         </div>
 
         <footer className="denunciaFooter">
-          <Botao type="button" variante="secondary" onClick={aoFechar}>
+          {erros.submit && <span className="denunciaError" style={{ display: 'block', marginBottom: '10px' }}>{erros.submit}</span>}
+          <Botao type="button" variante="secondary" onClick={aoFechar} disabled={enviando}>
             Cancelar
           </Botao>
-          <Botao type="button" variante="primary" onClick={handleSubmit}>
-            Enviar Denuncia
+          <Botao type="button" variante="primary" onClick={handleSubmit} disabled={enviando}>
+            {enviando ? "Enviando..." : "Enviar Denuncia"}
           </Botao>
         </footer>
       </div>
+
+      <ConfirmationModal
+        aberto={confirmarAberto}
+        aoFechar={() => setConfirmarAberto(false)}
+        aoConfirmar={realizarEnvio}
+        titulo="Confirmar Denúncia"
+        descricao="Tem certeza que deseja enviar esta denúncia? Nossos moderadores irão analisar o caso."
+        textoConfirmar="Sim, Enviar"
+        textoCancelar="Cancelar"
+      />
     </div>
   );
 };

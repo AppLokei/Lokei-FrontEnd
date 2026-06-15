@@ -1,14 +1,18 @@
+import { Link } from "react-router-dom";
 import Botao from "./Button";
 import "./RentalCard.css";
 
 const configuracaoStatus = {
-  concluido: { rotulo: "Concluido", semantica: "success" },
+  concluido: { rotulo: "Concluído", semantica: "success" },
   aprovado: { rotulo: "Aprovado", semantica: "success" },
-  confirmado: { rotulo: "Confirmado", semantica: "warning" },
-  analise: { rotulo: "Em Analise", semantica: "warning" },
+  confirmado: { rotulo: "Confirmado", semantica: "success" },
+  analise: { rotulo: "Em Análise", semantica: "warning" },
+  em_aprovacao: { rotulo: "Em Análise", semantica: "warning" },
   andamento: { rotulo: "Em Andamento", semantica: "warning" },
+  em_andamento: { rotulo: "Em Andamento", semantica: "warning" },
   pausado: { rotulo: "Pausado", semantica: "neutral" },
   cancelado: { rotulo: "Cancelado", semantica: "neutral" },
+  reprovado: { rotulo: "Reprovado", semantica: "neutral" },
 };
 
 const CardAluguel = ({
@@ -18,6 +22,7 @@ const CardAluguel = ({
   status,
   acao,
   acoesLocador,
+  hrefAnuncio,
 }) => {
   const configuracao = configuracaoStatus[status] || {
     rotulo: status,
@@ -26,13 +31,28 @@ const CardAluguel = ({
 
   return (
     <article className="rentalCard">
-      <div
-        className="rentalCardImage"
-        style={imagem ? { backgroundImage: `url(${imagem})` } : undefined}
-      />
+      {hrefAnuncio ? (
+        <Link to={hrefAnuncio} className="rentalCardImageLink">
+          <div
+            className="rentalCardImage"
+            style={imagem ? { backgroundImage: `url(${imagem})` } : undefined}
+          />
+        </Link>
+      ) : (
+        <div
+          className="rentalCardImage"
+          style={imagem ? { backgroundImage: `url(${imagem})` } : undefined}
+        />
+      )}
       <div className="rentalCardBody">
         <div className="rentalCardInfo">
-          <h3 className="rentalCardTitle">{titulo}</h3>
+          {hrefAnuncio ? (
+            <Link to={hrefAnuncio} style={{ textDecoration: "none", color: "inherit" }}>
+              <h3 className="rentalCardTitle">{titulo}</h3>
+            </Link>
+          ) : (
+            <h3 className="rentalCardTitle">{titulo}</h3>
+          )}
           <p className="rentalCardPeriod">{periodo}</p>
         </div>
         <div className={`rentalCardBadge rentalCardBadge--${configuracao.semantica}`}>

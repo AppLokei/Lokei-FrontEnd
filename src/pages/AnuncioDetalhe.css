@@ -150,10 +150,57 @@
 }
 
 /* ── Datas ── */
-.detailDates {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+.detailDatesRange {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  background: var(--color-branco-calmo);
+  border: 1px solid oklch(80.4% 0.156 82.5 / 0.3);
+  border-radius: 16px;
+  padding: 8px 16px;
+}
+
+.dateBox {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.dateBox label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-cinza-texto);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.dateBox input {
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-grafite-escuro);
+  outline: none;
+  padding: 0;
+  width: 100%;
+}
+
+.dateBox input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.dateBoxError input {
+  color: red;
+}
+
+.dateSeparator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-ocre-acao);
+  padding: 0 8px;
 }
 
 .detailSummary {
@@ -251,7 +298,7 @@
   }
 
   .detailMedia {
-    position: static;
+    position: relative;
   }
 
   .detailBooking {
@@ -274,4 +321,177 @@
   .detailDates {
     grid-template-columns: 1fr;
   }
+}
+
+/* ── Galeria de Imagens ── */
+.galleryArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.85);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--color-grafite-escuro);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: background 0.2s, transform 0.2s;
+  z-index: 10;
+}
+
+.galleryArrow:hover {
+  background: white;
+  transform: translateY(-50%) scale(1.05);
+}
+
+.galleryArrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.galleryArrow.left {
+  left: 12px;
+}
+
+.galleryArrow.right {
+  right: 12px;
+}
+
+.galleryDots {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 6px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.galleryDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.galleryDot.active {
+  background: white;
+  transform: scale(1.2);
+}
+
+/* ── Fullscreen Overlay ── */
+.fullscreenOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fullscreenImage {
+  max-width: 90vw;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: scaleUp 0.3s ease cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes scaleUp {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.fullscreenClose {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+  z-index: 10000;
+}
+
+.fullscreenClose:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.fullscreenClose svg {
+  width: 24px;
+  height: 24px;
+}
+
+.fullscreenArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+  z-index: 10000;
+}
+
+.fullscreenArrow:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.fullscreenArrow svg {
+  width: 32px;
+  height: 32px;
+}
+
+.fullscreenArrow.left {
+  left: 20px;
+}
+
+.fullscreenArrow.right {
+  right: 20px;
+}
+
+.fullscreenIndicator {
+  position: absolute;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(8px);
 }

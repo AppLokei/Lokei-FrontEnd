@@ -41,7 +41,7 @@ export const mapearAnuncioParaCard = (anuncio) => ({
   localizacao: "Local nao informado",
   preco: `${formatarMoeda(anuncio.valorDiario)}/dia`,
   valorDiario: Number(anuncio.valorDiario ?? 0),
-  categoria: categoriaPorTitulo(anuncio.titulo, anuncio.ferramenta?.categoria ?? ""),
+  categoria: anuncio.ferramenta?.categoria || categoriaPorTitulo(anuncio.titulo, ""),
   imagem: anuncio.imagens?.[0] ?? "",
 });
 
@@ -124,5 +124,10 @@ export const removerImagemDoAnuncio = async (anuncioId, imagemId) =>
   request(`/anuncio/${anuncioId}/imagens/${imagemId}`, {
     method: "DELETE",
   });
+
+export const buscarAlugueisPorUsuario = async (identificador) => {
+  const data = await request(`/alugueis-por-usuario?identificador=${identificador}`);
+  return Array.isArray(data?.content) ? data.content : [];
+};
 
 export { categoriaPorTitulo };

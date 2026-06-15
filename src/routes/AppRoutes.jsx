@@ -17,11 +17,11 @@ import {
   EditarPerfil,
   Avaliacao,
   EditarAnuncio,
-  EsqueciSenha,
+  Admin,
 } from "../pages";
 
 const RotasApp = () => (
-  <Roteador>
+  <Roteador future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
     <Rotas>
       <Rota path="/" element={<Home />} />
       <Rota path="/login" element={<Login />} />
@@ -35,7 +35,7 @@ const RotasApp = () => (
       <Rota path="/perfil/editar" element={<EditarPerfil />} />
       <Rota path="/avaliar" element={<Avaliacao />} />
       <Rota path="/editar-anuncio" element={<EditarAnuncio />} />
-      <Rota path="/esqueci-senha" element={<EsqueciSenha />} />
+      <Rota path="/admin" element={<Admin />} />
     </Rotas>
   </Roteador>
 );
