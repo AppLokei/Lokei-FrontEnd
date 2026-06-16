@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { login as loginService } from "../services/auth";
+import { buscarUsuarioPorId } from "../services/usuarios";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
@@ -39,13 +40,36 @@ const Login = () => {
     try {
       setLoading(true);
       const data = await loginService(login, senha);
+      const usuario = data.usuario ?? {};
+      const userId = usuario.id;
 
-      localStorage.setItem("lokei_user_id", data.id);
-      localStorage.setItem("lokei_email", data.email);
-      localStorage.setItem("lokei_nome", data.nome);
-      localStorage.setItem("lokei_telefone", data.telefone);
-      localStorage.setItem("lokei_cpf", data.cpf);
-      localStorage.setItem("lokei_role", data.role);
+      localStorage.setItem("lokei_user_id", userId);
+      localStorage.setItem("lokei_nome", usuario.nome ?? "");
+      localStorage.setItem("lokei_email", usuario.email ?? "");
+      if (data.token) localStorage.setItem("lokei_token", data.token);
+
+      // O login retorna apenas id/nome/email; busca o perfil completo
+      // para preencher telefone, cpf e endereco.
+      try {
+        const perfil = await buscarUsuarioPorId(userId);
+        const endereco = perfil.endereco ?? {};
+
+        localStorage.setItem("lokei_telefone", perfil.telefone ?? "");
+        localStorage.setItem("lokei_cpf", perfil.cpf ?? "");
+
+        localStorage.setItem(`lokei_nome_${userId}`, perfil.nome ?? "");
+        localStorage.setItem(`lokei_email_${userId}`, perfil.email ?? "");
+        localStorage.setItem(`lokei_telefone_${userId}`, perfil.telefone ?? "");
+        localStorage.setItem(`lokei_cpf_${userId}`, perfil.cpf ?? "");
+        localStorage.setItem(`lokei_cep_${userId}`, endereco.cep ?? "");
+        localStorage.setItem(`lokei_logradouro_${userId}`, endereco.logradouro ?? "");
+        localStorage.setItem(`lokei_numero_${userId}`, endereco.numero ?? "");
+        localStorage.setItem(`lokei_bairro_${userId}`, endereco.bairro ?? "");
+        localStorage.setItem(`lokei_cidade_${userId}`, endereco.cidade ?? "");
+        localStorage.setItem(`lokei_estado_${userId}`, endereco.estado ?? "");
+      } catch (e) {
+        // Se a busca do perfil falhar, segue com os dados basicos do login.
+      }
 
       navigate("/");
       window.location.reload(); // Para forçar atualização do menu de navegação com os dados reais

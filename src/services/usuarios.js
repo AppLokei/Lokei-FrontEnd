@@ -45,6 +45,8 @@ export const cadastrarUsuario = async ({
     });
 };
 
+export const buscarUsuarioPorId = async (id) => request(`/usuario/${id}`);
+
 export const atualizarPerfil = async (id, dados) =>
     request(`/usuario/${id}`, {
         method: "PUT",
