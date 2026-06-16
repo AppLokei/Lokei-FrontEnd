@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import BarraNavegacao from "../components/NavigationBar";
 import Botao from "../components/Button";
 import ConfirmationModal from "../components/ConfirmationModal";
@@ -13,6 +14,11 @@ const MOTIVOS_TRADUZIDOS = {
 };
 
 const Admin = () => {
+  const role = localStorage.getItem("lokei_role");
+  if (!role || (role !== "ADMIN" && role !== "admin")) {
+    return <Navigate to="/" replace />;
+  }
+
   const [denuncias, setDenuncias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [mensagem, setMensagem] = useState({ texto: "", tipo: "" });

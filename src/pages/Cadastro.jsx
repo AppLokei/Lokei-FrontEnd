@@ -106,17 +106,18 @@ const Cadastro = () => {
     }
 
     try {
-      // Simulate API call that might fail
       const { cadastrarUsuario } = await import("../services");
       const cpfDigitos = cpf.replace(/\D/g, "");
+      const telefoneDigitos = telefone.replace(/\D/g, "");
+      const cepDigitos = cep.replace(/\D/g, "");
       
       await cadastrarUsuario({
         nome: nomeCompleto,
         email,
         cpf: cpfDigitos,
-        telefone,
+        telefone: telefoneDigitos,
         senha,
-        cep,
+        cep: cepDigitos,
         logradouro,
         numero,
         complemento,

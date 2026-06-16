@@ -41,14 +41,26 @@ export const mapearAnuncioParaCard = (anuncio) => ({
   localizacao: "Local nao informado",
   preco: `${formatarMoeda(anuncio.valorDiario)}/dia`,
   valorDiario: Number(anuncio.valorDiario ?? 0),
-  categoria: anuncio.ferramenta?.categoria || categoriaPorTitulo(anuncio.titulo, ""),
-  imagem: anuncio.imagens?.[0] ?? "",
+  categoria: anuncio.categoria || categoriaPorTitulo(anuncio.titulo, ""),
+  imagem: anuncio.imagemPrincipalUrl ?? anuncio.imagemPrincipal ?? "",
 });
 
 export const listarAnuncios = async (filtros = {}) => {
   const params = new URLSearchParams();
 
-  Object.entries(filtros).forEach(([chave, valor]) => {
+  // Map frontend filter names to backend expected parameters
+  const apiParams = {
+    q: filtros.titulo,
+    categoria: filtros.categoria,
+    precoMin: filtros.valorMin,
+    precoMax: filtros.valorMax,
+    cidade: filtros.cidade,
+    page: filtros.pagina ?? 0,
+    size: filtros.tamanho ?? 12,
+    sort: filtros.ordem ?? "recente"
+  };
+
+  Object.entries(apiParams).forEach(([chave, valor]) => {
     if (valor !== undefined && valor !== null && `${valor}`.trim() !== "") {
       params.set(chave, valor);
     }
@@ -56,78 +68,62 @@ export const listarAnuncios = async (filtros = {}) => {
 
   const query = params.toString();
   const data = await request(`/anuncios${query ? `?${query}` : ""}`);
-  return Array.isArray(data?.content) ? data.content : [];
+  return Array.isArray(data?.itens) ? data.itens : [];
 };
 
 export const buscarAnuncioPorId = async (id) => {
-  const anuncios = await listarAnuncios({ tamanho: 1000 });
-  return anuncios.find((anuncio) => String(anuncio.id) === String(id)) ?? null;
+  const data = await request(`/anuncios/${id}`);
+  return data;
 };
-
-const criarPayloadAnuncio = ({ titulo, descricao, valorDiario, categoria }) => ({
-  titulo,
-  descricao,
-  valorDiario: Number(valorDiario),
-  ferramenta: {
-    nome: titulo,
-    categoria,
-  },
-});
 
 export const criarAnuncio = async ({ titulo, descricao, valorDiario, categoria, imagens }) => {
-  const formData = new FormData();
-  formData.append(
-    "anuncio",
-    new Blob([JSON.stringify(criarPayloadAnuncio({ titulo, descricao, valorDiario, categoria }))], {
-      type: "application/json",
-    })
-  );
+  let imagemIds = [];
 
-  imagens.forEach((arquivo) => {
-    formData.append("imagens", arquivo);
-  });
+  if (imagens && imagens.length > 0) {
+    const formData = new FormData();
+    imagens.forEach((arquivo) => {
+      formData.append("files", arquivo);
+    });
 
-  return request("/anuncio", {
+    const uploadResponse = await request("/arquivos/upload", {
+      method: "POST",
+      body: formData,
+    });
+    
+    imagemIds = uploadResponse.map((img) => img.imagemId);
+  }
+
+  return request("/anuncios", {
     method: "POST",
-    body: formData,
+    body: JSON.stringify({
+      titulo,
+      descricao,
+      valorDiario: Number(valorDiario),
+      categoria,
+      imagemIds,
+    }),
   });
 };
 
-export const atualizarAnuncio = async (id, { titulo, descricao, valorDiario, categoria }) =>
-  request(`/anuncio/${id}`, {
+export const atualizarAnuncio = async (id, { titulo, descricao, valorDiario, categoria, imagemIds }) =>
+  request(`/anuncios/${id}`, {
     method: "PUT",
-    body: JSON.stringify(
-      criarPayloadAnuncio({ titulo, descricao, valorDiario, categoria })
-    ),
+    body: JSON.stringify({
+      titulo,
+      descricao,
+      valorDiario: Number(valorDiario),
+      categoria,
+      imagemIds: imagemIds || [],
+    }),
   });
 
 export const desativarAnuncio = async (id) =>
-  request(`/anuncio/${id}`, { method: "DELETE" });
+  request(`/anuncios/${id}`, { method: "DELETE" });
 
 export const pausarAnuncio = async (id) =>
-  request(`/anuncio/${id}/pausar`, { method: "PATCH" });
+  request(`/anuncios/${id}/pausar`, { method: "PATCH" });
 
 export const reativarAnuncio = async (id) =>
-  request(`/anuncio/${id}/reativar`, { method: "PATCH" });
-
-export const adicionarImagemAoAnuncio = async (id, arquivo) => {
-  const formData = new FormData();
-  formData.append("file", arquivo);
-
-  return request(`/anuncio/${id}/imagem`, {
-    method: "POST",
-    body: formData,
-  });
-};
-
-export const removerImagemDoAnuncio = async (anuncioId, imagemId) =>
-  request(`/anuncio/${anuncioId}/imagens/${imagemId}`, {
-    method: "DELETE",
-  });
-
-export const buscarAlugueisPorUsuario = async (identificador) => {
-  const data = await request(`/alugueis-por-usuario?identificador=${identificador}`);
-  return Array.isArray(data?.content) ? data.content : [];
-};
+  request(`/anuncios/${id}/reativar`, { method: "PATCH" });
 
 export { categoriaPorTitulo };

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Navigate } from "react-router-dom";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
@@ -12,9 +12,15 @@ const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 
 const EditarAnuncio = () => {
   const location = useLocation();
+  const userId = localStorage.getItem("lokei_user_id");
+
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
+
   const queryParams = new URLSearchParams(location.search);
   const queryId = queryParams.get("id");
-  const [anuncioId] = useState(queryId || "1");
+  const [anuncioId] = useState(queryId);
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
   const [valor, setValor] = useState("");
@@ -45,9 +51,11 @@ const EditarAnuncio = () => {
         if (anuncio) {
           setTitulo(anuncio.titulo);
           setDescricao(anuncio.descricao);
+          setCategoria(anuncio.categoria || "");
           setValor(String(anuncio.valorDiario ?? "").replace(".", ","));
           setFotosExistentes(
             (anuncio.imagens ?? []).map((imagem, index) => ({
+              id: anuncio.imagemIds?.[index],
               nome: `foto-${index + 1}`,
               url: imagem,
             }))
@@ -128,20 +136,44 @@ const EditarAnuncio = () => {
     return proximosErros;
   };
 
-  const handleSubmit = (evento) => {
+  const handleSubmit = async (evento) => {
     evento.preventDefault();
     const proximosErros = validar();
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
 
-    atualizarAnuncio(anuncioId, {
-      titulo,
-      categoria,
-      valorDiario: Number(valor.replace(",", ".")),
-      descricao,
-    })
-      .then(() => navigate(`/anuncios/${anuncioId}`))
-      .catch((error) => setErros({ submit: error.message }));
+    try {
+      let novasImagensIds = [];
+      if (fotosNovas.length > 0) {
+        const formData = new FormData();
+        fotosNovas.forEach((arquivo) => {
+          formData.append("files", arquivo);
+        });
+        const { request } = await import("../services/http");
+        const uploadResponse = await request("/arquivos/upload", {
+          method: "POST",
+          body: formData,
+        });
+        novasImagensIds = uploadResponse.map((img) => img.imagemId);
+      }
+
+      const imagemIds = [
+        ...fotosExistentes.filter(f => f.id).map(f => f.id),
+        ...novasImagensIds
+      ];
+
+      await atualizarAnuncio(anuncioId, {
+        titulo,
+        categoria,
+        valorDiario: Number(valor.replace(",", ".")),
+        descricao,
+        imagemIds,
+      });
+
+      navigate(`/anuncios/${anuncioId}`);
+    } catch (error) {
+      setErros({ submit: error.message });
+    }
   };
 
   return (

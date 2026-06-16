@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
@@ -12,6 +12,10 @@ const TAMANHO_MAXIMO_ARQUIVO = 5 * 1024 * 1024;
 const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 
 const Anunciar = () => {
+  const userId = localStorage.getItem("lokei_user_id");
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
   const [valor, setValor] = useState("");
@@ -91,14 +95,18 @@ const Anunciar = () => {
 
   const handleSubmit = async (evento) => {
     evento.preventDefault();
+    console.log("handleSubmit chamado!");
 
     const proximosErros = validar();
+    console.log("Erros validacao:", proximosErros);
     setErros(proximosErros);
 
     if (Object.keys(proximosErros).length > 0) {
+      console.log("Cancelando submit por erros de validacao.");
       return;
     }
 
+    console.log("Chamando criarAnuncio...");
     criarAnuncio({
       titulo,
       descricao,
@@ -106,8 +114,14 @@ const Anunciar = () => {
       categoria,
       imagens: fotos,
     })
-      .then(() => navigate("/anuncios"))
-      .catch((error) => setErros({ submit: error.message }));
+      .then(() => {
+        console.log("criarAnuncio sucesso");
+        navigate("/anuncios");
+      })
+      .catch((error) => {
+        console.error("criarAnuncio erro:", error);
+        setErros({ submit: error.message });
+      });
   };
 
   return (

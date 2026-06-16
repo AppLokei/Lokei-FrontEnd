@@ -1,6 +1,6 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { atualizarPerfil } from "../services/usuarios";
+import { useEffect, useState } from "react";
+import { Link, useNavigate, Navigate } from "react-router-dom";
+import { atualizarPerfil, buscarUsuarioPorId } from "../services/usuarios";
 
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
@@ -9,22 +9,51 @@ import "./EditarPerfil.css";
 
 const EditarPerfil = () => {
   const navigate = useNavigate();
-  const userId = localStorage.getItem("lokei_user_id") || "1";
+  const userId = localStorage.getItem("lokei_user_id");
 
-  const [nome, setNome] = useState(localStorage.getItem(`lokei_nome_${userId}`) || localStorage.getItem("lokei_nome") || "Usuário Teste");
-  const [email, setEmail] = useState(localStorage.getItem(`lokei_email_${userId}`) || localStorage.getItem("lokei_email") || "teste@email.com");
-  const [telefone, setTelefone] = useState(localStorage.getItem(`lokei_telefone_${userId}`) || localStorage.getItem("lokei_telefone") || "(64) 99999-9999");
-  const [cpf] = useState(localStorage.getItem(`lokei_cpf_${userId}`) || localStorage.getItem("lokei_cpf") || "123.456.789-01");
-  const [cep, setCep] = useState(localStorage.getItem(`lokei_cep_${userId}`) || "");
-  const [logradouro, setLogradouro] = useState(localStorage.getItem(`lokei_logradouro_${userId}`) || "");
-  const [numero, setNumero] = useState(localStorage.getItem(`lokei_numero_${userId}`) || "");
-  const [complemento, setComplemento] = useState(localStorage.getItem(`lokei_complemento_${userId}`) || "");
-  const [bairro, setBairro] = useState(localStorage.getItem(`lokei_bairro_${userId}`) || "");
-  const [cidade, setCidade] = useState(localStorage.getItem(`lokei_cidade_${userId}`) || "");
-  const [estado, setEstado] = useState(localStorage.getItem(`lokei_estado_${userId}`) || "");
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
+
+
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [cpf, setCpf] = useState("");
+  const [cep, setCep] = useState("");
+  const [logradouro, setLogradouro] = useState("");
+  const [numero, setNumero] = useState("");
+  const [complemento, setComplemento] = useState("");
+  const [bairro, setBairro] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [estado, setEstado] = useState("");
   const [erros, setErros] = useState({});
   const [modalAberto, setModalAberto] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const carregarPerfil = async () => {
+      try {
+        const dados = await buscarUsuarioPorId(userId);
+        setNome(dados.nome || "");
+        setEmail(dados.email || "");
+        setTelefone(dados.telefone || "");
+        setCpf(dados.cpf || "");
+        if (dados.endereco) {
+           setCep(dados.endereco.cep || "");
+           setLogradouro(dados.endereco.logradouro || "");
+           setNumero(dados.endereco.numero || "");
+           setComplemento(dados.endereco.complemento || "");
+           setBairro(dados.endereco.bairro || "");
+           setCidade(dados.endereco.cidade || "");
+           setEstado(dados.endereco.estado || "");
+        }
+      } catch (error) {
+        console.error("Erro ao carregar perfil:", error);
+      }
+    };
+    carregarPerfil();
+  }, [userId]);
 
   const validar = () => {
     const proximosErros = {};
@@ -49,31 +78,27 @@ const EditarPerfil = () => {
 
     try {
         setLoading(true);
+        const telefoneDigitos = telefone.replace(/\D/g, "");
+        const cepDigitos = cep.replace(/\D/g, "");
+
         // Salva os dados do perfil principal no backend
         const dadosSalvos = await atualizarPerfil(userId, {
             nome,
-            email,
-            telefone
+            telefone: telefoneDigitos,
+            endereco: {
+                cep: cepDigitos,
+                logradouro,
+                numero,
+                complemento,
+                bairro,
+                cidade,
+                estado
+            }
         });
 
-        // Atualiza as chaves do localStorage com a resposta da API
-        localStorage.setItem(`lokei_nome_${userId}`, dadosSalvos.nome);
-        localStorage.setItem(`lokei_email_${userId}`, dadosSalvos.email);
-        localStorage.setItem(`lokei_telefone_${userId}`, dadosSalvos.telefone);
-
-        // Endereços continuam sendo salvos localmente por enquanto
-        localStorage.setItem(`lokei_cep_${userId}`, cep);
-        localStorage.setItem(`lokei_logradouro_${userId}`, logradouro);
-        localStorage.setItem(`lokei_numero_${userId}`, numero);
-        localStorage.setItem(`lokei_complemento_${userId}`, complemento);
-        localStorage.setItem(`lokei_bairro_${userId}`, bairro);
-        localStorage.setItem(`lokei_cidade_${userId}`, cidade);
-        localStorage.setItem(`lokei_estado_${userId}`, estado);
-
-        // Keep global generic for compatibility with Perfil.jsx
+        // Update globally cached names
         localStorage.setItem("lokei_nome", dadosSalvos.nome);
-        localStorage.setItem("lokei_email", dadosSalvos.email);
-        localStorage.setItem("lokei_telefone", dadosSalvos.telefone);
+        localStorage.setItem("lokei_email", dadosSalvos.email || email);
 
         setModalAberto(true);
     } catch (error) {
