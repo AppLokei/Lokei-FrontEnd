@@ -19,3 +19,15 @@ export const atualizarPerfil = async (id, dados) => {
         throw error;
     }
 };
+
+export const buscarUsuarioPorId = async (id) => {
+    try {
+        const response = await fetch(`${API_URL}/${id}`);
+        if (!response.ok) {
+            throw new Error("Usuário não encontrado.");
+        }
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};

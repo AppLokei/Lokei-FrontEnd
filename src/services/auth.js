@@ -20,3 +20,23 @@ export const login = async (email, senha) => {
         throw error;
     }
 };
+
+export const cadastrarUsuario = async (dados) => {
+    try {
+        const response = await fetch(`${API_URL}/registro`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(dados),
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao criar a conta. Verifique os dados.");
+        }
+
+        return await response.json();
+    } catch (error) {
+        throw error;
+    }
+};
