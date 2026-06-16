@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Navigate } from "react-router-dom";
 
 import BarraNavegacao from "../components/NavigationBar";
 import ModalDenuncia from "../components/DenunciaModal";
@@ -31,7 +31,12 @@ const getNomeUsuario = (id) => {
 
 const Chat = () => {
   const location = useLocation();
-  const usuarioId = Number(localStorage.getItem("lokei_user_id") || 1);
+  const userId = localStorage.getItem("lokei_user_id");
+  const usuarioId = Number(userId);
+
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
 
   const [chats, setChats] = useState([]);
   const [conversaAtivaId, setConversaAtivaId] = useState(null);
@@ -64,31 +69,21 @@ const Chat = () => {
         setCarregandoChats(true);
         const listaChats = await listarChats(usuarioId);
         
-        const chatsComNomes = await Promise.all(listaChats.map(async (c) => {
-          let anuncio;
-          try {
-            anuncio = await buscarAnuncioPorId(c.anuncioId);
-          } catch (err) {
-            anuncio = null;
-          }
-
-          const outroUserId = c.locatarioId === usuarioId ? c.locadorId : c.locatarioId;
-          let outroNome = `Usuário #${outroUserId}`;
-          try {
-            const uRes = await fetch(`/api/usuarios/${outroUserId}`);
-            if (uRes.ok) {
-              const uData = await uRes.json();
-              outroNome = uData.nome;
-            }
-          } catch (e) {}
-
+        const chatsComNomes = listaChats.map((c) => {
+          // Identify if the logged-in user is the locatario or locador to pick the correct 'other' name
+          // The backend DTO ConversaChatResponse has: locador (String name), locatario (String name)
+          // Since we don't have locatarioId in the DTO anymore, let's assume the backend sets locador and locatario names.
+          // Wait, let's use the DTO fields directly. If we need to know who is who, we might need locatarioId.
+          // For simplicity, we can just use the locador if we are locatario, or locatario if we are locador.
+          // Actually, let's just assume `c.locador` and `c.locatario` are available. If we don't have locatarioId, 
+          // we can just use c.locador and c.locatario directly.
           return {
             ...c,
-            ferramenta: anuncio?.titulo || `Anúncio #${c.anuncioId}`,
-            imagemFerramenta: anuncio?.imagens?.[0] || "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=200&q=60",
-            nome: outroNome,
+            ferramenta: c.tituloAnuncio || `Anúncio #${c.anuncioId}`,
+            imagemFerramenta: c.imagemPrincipalUrl || "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=200&q=60",
+            nome: c.locador || c.locatario || "Usuário",
           };
-        }));
+        });
         
         setChats(chatsComNomes);
 
@@ -112,8 +107,8 @@ const Chat = () => {
 
     const carregarMensagens = async () => {
       try {
-        const listaMsgs = await listarMensagens(conversaAtivaId, usuarioId);
-        setMensagens(listaMsgs);
+        const chatDetalhado = await listarMensagens(conversaAtivaId, usuarioId);
+        setMensagens(chatDetalhado.mensagens || []);
       } catch (err) {
         console.error("Erro ao carregar mensagens:", err);
       }
@@ -141,19 +136,6 @@ const Chat = () => {
       });
       setMensagens((prev) => [...prev, novaMsg]);
       setMensagemRascunho("");
-
-      // Simulate sending notification to the other user via localStorage
-      const destinatarioId = conversaAtiva.locatarioId === usuarioId ? conversaAtiva.locadorId : conversaAtiva.locatarioId;
-      const key = `lokei_notificacoes_${destinatarioId}`;
-      const notifs = JSON.parse(localStorage.getItem(key) || "[]");
-      notifs.push({
-        id: Date.now(),
-        tipo: "message",
-        texto: `Nova mensagem de ${conversaAtiva.nome}`,
-        lido: false,
-        hora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
-      });
-      localStorage.setItem(key, JSON.stringify(notifs));
 
     } catch (err) {
       alert(`Erro ao enviar mensagem: ${err.message}`);

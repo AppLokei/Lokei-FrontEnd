@@ -51,7 +51,7 @@ const ModalDenuncia = ({ aberto, aoFechar, anuncioId = 1 }) => {
   const realizarEnvio = async () => {
     try {
       setEnviando(true);
-      const userLoggedId = Number(localStorage.getItem("lokei_user_id") || 1);
+      const userLoggedId = Number(localStorage.getItem("lokei_user_id"));
       await criarDenuncia(anuncioId, {
         denuncianteId: userLoggedId,
         motivo,

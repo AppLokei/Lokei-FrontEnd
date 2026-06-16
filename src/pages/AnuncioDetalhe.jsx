@@ -5,7 +5,7 @@ import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
 import ConfirmationModal from "../components/ConfirmationModal";
-import { buscarAnuncioPorId, formatarMoeda, desativarAnuncio, iniciarChat, pausarAnuncio, reativarAnuncio } from "../services";
+import { buscarAnuncioPorId, formatarMoeda, desativarAnuncio, pausarAnuncio, reativarAnuncio } from "../services";
 import "./AnuncioDetalhe.css";
 
 const paraData = (valor) => {
@@ -20,7 +20,7 @@ const diferencaEmDias = (dataInicio, dataFim) => {
 };
 
 const AnuncioDetalhe = () => {
-  const role = localStorage.getItem("lokei_role") || "locatario";
+  const role = localStorage.getItem("lokei_role");
   const [dataInicio, setDataInicio] = useState("");
   const [dataFim, setDataFim] = useState("");
   const [erros, setErros] = useState({});
@@ -85,15 +85,17 @@ const AnuncioDetalhe = () => {
         if (!data) throw new Error("Anúncio não encontrado");
         
         if (mounted) {
-          setAnuncio(data);
-          
-          if (data.usuarioId) {
-            fetch(`/api/usuarios/${data.usuarioId}`)
-              .then(res => res.ok ? res.json() : null)
-              .then(userData => {
-                if (mounted && userData) setLocadorDados(userData);
-              })
-              .catch(err => console.error("Erro ao buscar locador", err));
+          setAnuncio({
+            ...data,
+            usuarioId: data.proprietario?.id,
+          });
+          if (data.proprietario) {
+            setLocadorDados({
+              nome: data.proprietario.nome,
+              cidade: data.proprietario.cidade,
+              cep: data.proprietario.cep,
+              estado: data.proprietario.estado,
+            });
           }
         }
       } catch (err) {
@@ -153,6 +155,10 @@ const AnuncioDetalhe = () => {
 
   const handleSubmit = () => {
     if (souDono) return;
+    if (!localStorage.getItem("lokei_user_id")) {
+      navigate("/login");
+      return;
+    }
     const proximosErros = validar();
     setErros(proximosErros);
     if (Object.keys(proximosErros).length > 0) return;
@@ -164,7 +170,7 @@ const AnuncioDetalhe = () => {
     const inicio = paraData(dataInicio);
     const fim = paraData(dataFim);
 
-    const locatarioId = Number(localStorage.getItem("lokei_user_id") || 1);
+    const locatarioId = Number(localStorage.getItem("lokei_user_id"));
     const locadorId = Number(anuncio.usuarioId);
 
     const diferencaDias = diferencaEmDias(inicio, fim);
@@ -176,8 +182,8 @@ const AnuncioDetalhe = () => {
       await criarAluguel({
         locatarioId,
         anuncioId: Number(id),
-        dataInicio: inicio.toISOString(),
-        dataFim: fim.toISOString(),
+        dataInicio: dataInicio,
+        dataFim: dataFim,
         valorTotal
       });
 
@@ -225,23 +231,7 @@ const AnuncioDetalhe = () => {
     }
   };
 
-  const handleOpenChat = async () => {
-    try {
-      if (anuncio.status === "PAUSADO") {
-        setModalBloqueioChatAberto(true);
-        return;
-      }
-      const locatarioId = Number(localStorage.getItem("lokei_user_id") || 1);
-      if (anuncio.usuarioId && Number(anuncio.usuarioId) === locatarioId) {
-        alert("Você não pode abrir um chat com você mesmo!");
-        return;
-      }
-      const chat = await iniciarChat(anuncio.id, locatarioId);
-      navigate("/chat", { state: { activeChatId: chat.id } });
-    } catch (error) {
-      alert(`Erro ao abrir chat: ${error.message}`);
-    }
-  };
+
 
   return (
     <div className="detailPage">
@@ -284,7 +274,10 @@ const AnuncioDetalhe = () => {
                     </span>
                   )}
                 </h1>
-                <p className="detailLocation">Local nao informado</p>
+                <p className="detailLocation">
+                  {locadorDados?.cidade && locadorDados?.estado ? `${locadorDados.cidade} - ${locadorDados.estado}` : locadorDados?.cidade ? locadorDados.cidade : "Local não informado"}
+                  {locadorDados?.cep ? ` (CEP: ${locadorDados.cep})` : ""}
+                </p>
               </div>
 
               <div className="detailSection">
@@ -298,7 +291,6 @@ const AnuncioDetalhe = () => {
               </div>
               <div className="anuncioLocadorInfo">
                 <h3>{locadorDados ? locadorDados.nome : (Number(anuncio.usuarioId) === 2 ? "Outro Teste" : "Usuário Teste")}</h3>
-                <span className="anuncioLocadorAvaliacao">★ 5.0 (Mockado)</span>
               </div>
             </div>
             </div>
@@ -369,13 +361,6 @@ const AnuncioDetalhe = () => {
                         </Botao>
                       </>
                     )}
-                    <button
-                      className="detailChatLink"
-                      type="button"
-                      onClick={handleOpenChat}
-                    >
-                      Abrir Chat
-                    </button>
                   </div>
                 )}
 

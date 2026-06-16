@@ -40,12 +40,11 @@ const Login = () => {
       setLoading(true);
       const data = await loginService(login, senha);
 
-      localStorage.setItem("lokei_user_id", data.id);
-      localStorage.setItem("lokei_email", data.email);
-      localStorage.setItem("lokei_nome", data.nome);
-      localStorage.setItem("lokei_telefone", data.telefone);
-      localStorage.setItem("lokei_cpf", data.cpf);
-      localStorage.setItem("lokei_role", data.role);
+      localStorage.setItem("lokei_token", data.token);
+      localStorage.setItem("lokei_user_id", data.usuario.id);
+      localStorage.setItem("lokei_email", data.usuario.email);
+      localStorage.setItem("lokei_nome", data.usuario.nome);
+      localStorage.setItem("lokei_role", data.usuario.papel);
 
       navigate("/");
       window.location.reload(); // Para forçar atualização do menu de navegação com os dados reais

@@ -15,6 +15,7 @@ const categorias = [
   { id: "SERRAS_E_MOTOSSERRAS", nome: "Serras", icon: "🪚" },
   { id: "MARTELOS", nome: "Martelos", icon: "🔨" },
 ];
+import { listarNotificacoes, marcarNotificacaoLida } from "../services/notificacoes";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -27,22 +28,32 @@ const Home = () => {
   const [notificacoes, setNotificacoes] = useState([]);
   const notificacoesRef = useRef(null);
   
-  const userId = localStorage.getItem("lokei_user_id") || "1";
+  const userId = localStorage.getItem("lokei_user_id");
 
   useEffect(() => {
-    const list = JSON.parse(localStorage.getItem(`lokei_notificacoes_${userId}`) || "[]");
-    setNotificacoes(list);
+    const fetchNotificacoes = async () => {
+      const data = await listarNotificacoes();
+      setNotificacoes(data);
+    };
+    if (userId) {
+      fetchNotificacoes();
+      const interval = setInterval(fetchNotificacoes, 10000);
+      return () => clearInterval(interval);
+    }
   }, [userId]);
 
-  const notificacoesNaoLidas = notificacoes.filter((n) => !n.lido && n.tipo !== "message").length;
+  const notificacoesNaoLidas = notificacoes.filter((n) => !n.lida).length;
 
   const handleToggleNotificacoes = () => {
     const novaAberta = !notificacoesAbertas;
     setNotificacoesAbertas(novaAberta);
-    if (novaAberta && notificacoes.some((n) => !n.lido && n.tipo !== "message")) {
-      const atualizadas = notificacoes.map((n) => (n.tipo !== "message" ? { ...n, lido: true } : n));
-      setNotificacoes(atualizadas);
-      localStorage.setItem(`lokei_notificacoes_${userId}`, JSON.stringify(atualizadas));
+    if (novaAberta) {
+      notificacoes.forEach(n => {
+        if (!n.lida) {
+          marcarNotificacaoLida(n.id).catch(console.error);
+        }
+      });
+      setNotificacoes(prev => prev.map(n => ({ ...n, lida: true })));
     }
   };
 
@@ -165,7 +176,7 @@ const Home = () => {
                       <button
                         type="button"
                         onClick={() => {
-                          localStorage.setItem(`lokei_notificacoes_${userId}`, "[]");
+                          notificacoes.forEach(n => marcarNotificacaoLida(n.id).catch(console.error));
                           setNotificacoes([]);
                         }}
                         style={{ background: "none", border: "none", color: "var(--color-primary, #e6b121)", cursor: "pointer", fontSize: "0.8rem", fontWeight: "bold" }}
@@ -175,20 +186,15 @@ const Home = () => {
                     )}
                   </div>
                   <ul className="homeNotifList">
-                    {notificacoes.filter(n => n.tipo !== "message").length > 0 ? (
-                      notificacoes.filter(n => n.tipo !== "message").map((notificacao) => (
+                    {notificacoes.length > 0 ? (
+                      notificacoes.map((notificacao) => (
                         <li key={notificacao.id} className="homeNotifItem">
-                          <span className={`homeNotifIcon homeNotifIcon--${notificacao.tipo}`}>
-                            {notificacao.tipo === "success" && (
-                              <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                            )}
-                            {notificacao.tipo === "alert" && (
-                              <svg viewBox="0 0 24 24"><path d="M12 9v4m0 4h.01M10.3 3.2 1.8 18a2 2 0 0 0 1.7 3h16.9a2 2 0 0 0 1.7-3L13.7 3.2a2 2 0 0 0-3.4 0z" /></svg>
-                            )}
+                          <span className={`homeNotifIcon homeNotifIcon--success`}>
+                            <svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                           </span>
                           <div className="homeNotifText">
-                            <p>{notificacao.texto}</p>
-                            <span>{notificacao.hora}</span>
+                            <p>{notificacao.mensagem}</p>
+                            <span>{new Date(notificacao.dataHoraEnvio).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</span>
                           </div>
                         </li>
                       ))

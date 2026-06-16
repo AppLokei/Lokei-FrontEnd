@@ -1,12 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, Navigate } from "react-router-dom";
 
 import BarraNavegacao from "../components/NavigationBar";
 import "./Perfil.css";
 
 const Perfil = () => {
   const navigate = useNavigate();
+  const userId = localStorage.getItem("lokei_user_id");
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
   const nome = localStorage.getItem("lokei_nome") || "Usuário Teste";
-  const role = localStorage.getItem("lokei_role") || "locatario";
+  const role = localStorage.getItem("lokei_role");
 
   const getIniciais = (nomeCompleto) => {
     const partes = nomeCompleto.split(" ").filter(Boolean);
@@ -35,10 +39,7 @@ const Perfil = () => {
                 <h1 className="perfilName" style={{ margin: 0 }}>{nome}</h1>
               </div>
               <div className="perfilMeta">
-                <span className="perfilRating">
-                  <strong>4.9</strong>
-                  <span className="perfilStars">★★★★★</span>
-                </span>
+                {/* Avaliação real será implementada futuramente */}
               </div>
             </div>
           </div>
@@ -69,7 +70,10 @@ const Perfil = () => {
           <button
             className="perfilLogout"
             type="button"
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              localStorage.clear();
+              navigate("/login");
+            }}
           >
             Sair da conta
           </button>

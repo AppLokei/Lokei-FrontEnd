@@ -1,21 +1,19 @@
 import { request } from "./http";
 
-export const iniciarChat = async (anuncioId, locatarioId) =>
-  request(`/anuncios/${anuncioId}/chats?locatarioId=${locatarioId}`, {
-    method: "POST",
-  });
+export const iniciarChat = async (aluguelId) =>
+  request(`/alugueis/${aluguelId}/chat`);
 
-export const listarChats = async (usuarioId) =>
-  request(`/chats?usuarioId=${usuarioId}`);
+export const listarChats = async () =>
+  request(`/chats`);
 
-export const enviarMensagem = async (chatId, { remetenteId, conteudo }) =>
+export const enviarMensagem = async (chatId, { conteudo }) =>
   request(`/chats/${chatId}/mensagens`, {
     method: "POST",
-    body: JSON.stringify({ remetenteId, conteudo }),
+    body: JSON.stringify({ conteudo }),
   });
 
-export const listarMensagens = async (chatId, usuarioId) =>
-  request(`/chats/${chatId}/mensagens?usuarioId=${usuarioId}`);
+export const listarMensagens = async (chatId) =>
+  request(`/chats/${chatId}`);
 
 export const excluirChat = async (chatId) =>
   request(`/chats/${chatId}`, { method: "DELETE" });

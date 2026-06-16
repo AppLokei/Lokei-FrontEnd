@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Navigate } from "react-router-dom";
 
 import Botao from "../components/Button";
 import { enviarAvaliacao } from "../services";
@@ -42,6 +42,11 @@ const StarRating = ({ valor, aoMudar, hoverValor, aoMudarHover }) => (
 );
 
 const Avaliacao = () => {
+  const userId = localStorage.getItem("lokei_user_id");
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
+
   const [nota, setNota] = useState(0);
   const [hoverNota, setHoverNota] = useState(0);
   const [comentario, setComentario] = useState("");
@@ -99,14 +104,17 @@ const Avaliacao = () => {
             {/* Resumo minimalista de leitura */}
             <div className="avaliacaoResumo">
               <img
-                src={aluguel.imagem}
+                src={aluguel.imagem || aluguel.imagemPrincipalUrl}
                 alt={aluguel.titulo}
                 className="avaliacaoResumoImage"
               />
               <div className="avaliacaoResumoInfo">
                 <strong>{aluguel.titulo}</strong>
-                <span>Locador: {aluguel.locador || "Marina Souza"}</span>
-                <span>Período: {aluguel.periodo}</span>
+                <span>
+                  {aluguel.papel === "locador" ? "Locatário" : "Locador"}:{" "}
+                  {aluguel.papel === "locador" ? aluguel.locatario : aluguel.proprietario || aluguel.locador}
+                </span>
+                <span>Período: {aluguel.periodo || `${aluguel.dataInicio} a ${aluguel.dataFim}`}</span>
               </div>
             </div>
 

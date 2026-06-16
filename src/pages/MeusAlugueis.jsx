@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 
 import CardAluguel from "../components/RentalCard";
 import BarraNavegacao from "../components/NavigationBar";
@@ -11,8 +11,9 @@ const defaultItensLocatario = [];
 const itensLocador = [];
 
 const MeusAlugueis = () => {
-  const role = localStorage.getItem("lokei_role") || "locatario";
-  const [abaAtiva, setAbaAtiva] = useState(role === "locador" ? "emprestados" : "alugando");
+  const userId = localStorage.getItem("lokei_user_id");
+  const role = localStorage.getItem("lokei_role");
+  const [abaAtiva, setAbaAtiva] = useState(role === "LOCADOR" || role === "locador" ? "emprestados" : "alugando");
   const [modalConfirmacao, setModalConfirmacao] = useState({
     aberto: false,
     tipo: "", // "cancelar" | "reprovar"
@@ -25,29 +26,32 @@ const MeusAlugueis = () => {
   const [erro, setErro] = useState("");
   const navigate = useNavigate();
 
+  if (!userId) {
+    return <Navigate to="/login" replace />;
+  }
+
+
   useEffect(() => {
     const carregar = async () => {
       try {
         setCarregando(true);
         setErro("");
         
-        const usuarioId = Number(localStorage.getItem("lokei_user_id") || 1);
-        
-        const dados = await buscarAlugueisPorUsuario(usuarioId);
+        const dados = await buscarAlugueisPorUsuario();
         const backendMapeado = dados.map((aluguel) => ({
           id: aluguel.id,
-          titulo: `Aluguel #${aluguel.id} - Anúncio #${aluguel.anuncioId}`,
+          titulo: aluguel.tituloAnuncio || `Aluguel #${aluguel.id} - Anúncio #${aluguel.anuncioId}`,
           periodo: `${new Date(aluguel.dataInicio).toLocaleDateString("pt-BR")} a ${new Date(aluguel.dataFim).toLocaleDateString("pt-BR")}`,
           status: String(aluguel.status || "confirmado").toLowerCase(),
-          imagem:
-            "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
-          locatarioId: aluguel.locatarioId,
-          locadorId: aluguel.locadorId || (aluguel.anuncioId === 1 ? 1 : 2), // Mock locador if missing for now
-          anuncioId: aluguel.anuncioId
+          imagem: aluguel.imagemPrincipalUrl || "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
+          papel: aluguel.papel,
+          anuncioId: aluguel.anuncioId,
+          locatarioNome: aluguel.locatario,
+          locadorNome: aluguel.proprietario
         }));
 
-        const meusAlugueis = backendMapeado.filter(a => Number(a.locatarioId) === usuarioId);
-        const meusEmprestimos = backendMapeado.filter(a => Number(a.locatarioId) !== usuarioId);
+        const meusAlugueis = backendMapeado.filter(a => a.papel === 'locatario');
+        const meusEmprestimos = backendMapeado.filter(a => a.papel === 'locador');
 
         setItensLocatario(meusAlugueis);
         setEmprestados(meusEmprestimos);
@@ -69,20 +73,18 @@ const MeusAlugueis = () => {
       const carregarAnuncios = async () => {
         try {
           setCarregandoAnuncios(true);
-          const userId = localStorage.getItem("lokei_user_id") || "1";
-          const res = await fetch(`/api/anuncios-por-usuario?identificador=${userId}`);
-          if (!res.ok) throw new Error("Erro ao carregar anúncios");
-          const data = await res.json();
-          const anunciosMapeados = (data.content || []).map(a => ({
+          const { request } = await import("../services/http");
+          const data = await request(`/anuncios/meus`);
+          const anunciosMapeados = (data || []).map(a => ({
             id: a.id,
             titulo: a.titulo,
             periodo: `R$ ${a.valorDiario}/dia`,
             status: a.status === "PAUSADO" ? "pausado" : "ativo",
-            imagem: a.imagens?.[0] || "",
+            imagem: a.imagemPrincipalUrl || a.imagemPrincipal || a.imagens?.[0] || "",
           }));
           setMeusAnuncios(anunciosMapeados);
         } catch (error) {
-          console.error(error);
+          console.error("Erro ao buscar meus anúncios:", error);
         } finally {
           setCarregandoAnuncios(false);
         }
@@ -91,60 +93,44 @@ const MeusAlugueis = () => {
     }
   }, [abaAtiva]);
 
-  const adicionarNotificacao = (usuarioAlvoId, texto, tipo = "success") => {
-    const key = `lokei_notificacoes_${usuarioAlvoId}`;
-    const notifs = JSON.parse(localStorage.getItem(key) || "[]");
-    const novaNotif = {
-      id: Date.now(),
-      texto,
-      hora: "Agora",
-      tipo,
-      lido: false,
-    };
-    localStorage.setItem(key, JSON.stringify([novaNotif, ...notifs]));
-  };
 
-  const handleOwnerAction = async (id, acao) => {
+
+  const handleOwnerAction = async (id, acao, motivo = "Sem motivo") => {
     try {
-      const { atualizarStatusAluguel } = await import("../services");
-      let novoStatus = "";
-      if (acao === "aprovar") novoStatus = "CONFIRMADO";
-      else if (acao === "reprovar") novoStatus = "REPROVADO";
-      else if (acao === "confirmar_pagamento_entrega") novoStatus = "EM_ANDAMENTO";
-      else if (acao === "finalizar") novoStatus = "CONCLUIDO";
-      else return;
-
-      await atualizarStatusAluguel(id, novoStatus);
+      const { aprovarAluguel, reprovarAluguel, cancelarAluguel, confirmarEntregaAluguel, finalizarAluguel } = await import("../services");
       
-      const item = emprestados.find(i => i.id === id) || itensLocatario.find(i => i.id === id);
-      if (item) {
-        if (acao === "aprovar") {
-          adicionarNotificacao(item.locatarioId, `Sua solicitação de aluguel para a ferramenta "${item.titulo}" foi aprovada!`, "success");
-        } else if (acao === "reprovar") {
-          adicionarNotificacao(item.locatarioId, `Sua solicitação de aluguel para a ferramenta "${item.titulo}" foi recusada.`, "alert");
-        } else if (acao === "confirmar_pagamento_entrega") {
-          adicionarNotificacao(item.locatarioId, `Pagamento e entrega confirmados para a ferramenta "${item.titulo}". O aluguel está em andamento!`, "success");
-        } else if (acao === "finalizar") {
-          adicionarNotificacao(item.locatarioId, `O aluguel da ferramenta "${item.titulo}" foi concluído. Clique para avaliar!`, "success");
-        }
+      if (acao === "aprovar") {
+        await aprovarAluguel(id);
+      } else if (acao === "reprovar") {
+        await reprovarAluguel(id, motivo);
+      } else if (acao === "cancelar") {
+        await cancelarAluguel(id, motivo);
+      } else if (acao === "confirmar_pagamento_entrega") {
+        await confirmarEntregaAluguel(id);
+      } else if (acao === "finalizar") {
+        await finalizarAluguel(id);
+      } else {
+        alert(`Ação ${acao} não possui endpoint no backend atual.`);
+        return;
       }
+      
 
-      const usuarioId = Number(localStorage.getItem("lokei_user_id") || 1);
-      const dados = await buscarAlugueisPorUsuario(usuarioId);
+
+      const dados = await buscarAlugueisPorUsuario();
       const backendMapeado = dados.map((aluguel) => ({
         id: aluguel.id,
-        titulo: `Aluguel #${aluguel.id} - Anúncio #${aluguel.anuncioId}`,
+        titulo: aluguel.tituloAnuncio || `Aluguel #${aluguel.id} - Anúncio #${aluguel.anuncioId}`,
         periodo: `${new Date(aluguel.dataInicio).toLocaleDateString("pt-BR")} a ${new Date(aluguel.dataFim).toLocaleDateString("pt-BR")}`,
         status: String(aluguel.status || "confirmado").toLowerCase(),
-        imagem:
-          "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
-        locatarioId: aluguel.locatarioId,
-        locadorId: aluguel.locadorId || (aluguel.anuncioId === 1 ? 1 : 2),
-        anuncioId: aluguel.anuncioId
+        imagem: aluguel.imagemPrincipalUrl || "https://images.unsplash.com/photo-1586864387789-628af9feed72?auto=format&fit=crop&w=800&q=80",
+        papel: aluguel.papel,
+        anuncioId: aluguel.anuncioId,
+        locatarioNome: aluguel.locatario,
+        locadorNome: aluguel.proprietario
       }));
 
-      const meusAlugueis = backendMapeado.filter(a => Number(a.locatarioId) === usuarioId);
-      const meusEmprestimos = backendMapeado.filter(a => Number(a.locatarioId) !== usuarioId);
+      const meusAlugueis = backendMapeado.filter(a => a.papel === 'locatario');
+      const meusEmprestimos = backendMapeado.filter(a => a.papel === 'locador');
 
       setItensLocatario(meusAlugueis);
       setEmprestados(meusEmprestimos);
@@ -251,11 +237,19 @@ const MeusAlugueis = () => {
                           tituloAluguel: aluguel.titulo,
                         }),
                     }
-                    : aluguel.status === "em_andamento"
+                    : (aluguel.status === "em_andamento" || aluguel.status === "ativo" || aluguel.status === "confirmado")
                       ? {
                           rotulo: "Abrir Chat",
                           variante: "outlineYellow",
-                          aoClicar: () => navigate("/chat"),
+                          aoClicar: async () => {
+                            try {
+                              const { iniciarChat } = await import("../services");
+                              const chat = await iniciarChat(aluguel.id);
+                              navigate("/chat", { state: { activeChatId: chat.id } });
+                            } catch (err) {
+                              alert(`Erro ao abrir chat: ${err.message}`);
+                            }
+                          },
                         }
                       : aluguel.status === "concluido"
                         ? {
@@ -314,7 +308,7 @@ const MeusAlugueis = () => {
                                 }),
                             },
                           ]
-                        : aluguel.status === "em_andamento"
+                        : (aluguel.status === "em_andamento" || aluguel.status === "ativo")
                           ? [
                               {
                                 rotulo: "Finalizar Aluguel",
@@ -351,23 +345,26 @@ const MeusAlugueis = () => {
           }
           aoConfirmar={() => {
             if (modalConfirmacao.tipo === "cancelar") {
-              handleOwnerAction(modalConfirmacao.aluguelId, "reprovar");
+              const motivo = prompt("Por favor, informe o motivo do cancelamento:");
+              if (!motivo) return;
+              handleOwnerAction(modalConfirmacao.aluguelId, "cancelar", motivo);
             } else if (modalConfirmacao.tipo === "reprovar") {
-              handleOwnerAction(modalConfirmacao.aluguelId, "reprovar");
+              const motivo = prompt("Por favor, informe o motivo da reprovação:");
+              if (!motivo) return;
+              handleOwnerAction(modalConfirmacao.aluguelId, "reprovar", motivo);
             } else if (modalConfirmacao.tipo === "pausar_anuncio") {
-              // Call the pause service
               import("../services").then(({ pausarAnuncio }) => {
                 pausarAnuncio(modalConfirmacao.aluguelId).then(() => {
                   setAbaAtiva("emprestados");
                   setTimeout(() => setAbaAtiva("anuncios"), 50); // Refresh
-                });
+                }).catch(e => alert(e.message || "Erro ao pausar o anúncio."));
               });
             } else if (modalConfirmacao.tipo === "reativar_anuncio") {
               import("../services").then(({ reativarAnuncio }) => {
                 reativarAnuncio(modalConfirmacao.aluguelId).then(() => {
                   setAbaAtiva("emprestados");
                   setTimeout(() => setAbaAtiva("anuncios"), 50); // Refresh
-                });
+                }).catch(e => alert(e.message || "Erro ao reativar o anúncio."));
               });
             }
             setModalConfirmacao({
