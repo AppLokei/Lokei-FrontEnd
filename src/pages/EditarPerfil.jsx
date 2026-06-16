@@ -50,16 +50,16 @@ const EditarPerfil = () => {
     try {
         setLoading(true);
         // Salva os dados do perfil principal no backend
-        const dadosSalvos = await atualizarPerfil(userId, {
+        await atualizarPerfil(userId, {
             nome,
             email,
             telefone
         });
 
-        // Atualiza as chaves do localStorage com a resposta da API
-        localStorage.setItem(`lokei_nome_${userId}`, dadosSalvos.nome);
-        localStorage.setItem(`lokei_email_${userId}`, dadosSalvos.email);
-        localStorage.setItem(`lokei_telefone_${userId}`, dadosSalvos.telefone);
+        // Atualiza as chaves do localStorage com os dados enviados
+        localStorage.setItem(`lokei_nome_${userId}`, nome);
+        localStorage.setItem(`lokei_email_${userId}`, email);
+        localStorage.setItem(`lokei_telefone_${userId}`, telefone);
 
         // Endereços continuam sendo salvos localmente por enquanto
         localStorage.setItem(`lokei_cep_${userId}`, cep);
@@ -71,9 +71,9 @@ const EditarPerfil = () => {
         localStorage.setItem(`lokei_estado_${userId}`, estado);
 
         // Keep global generic for compatibility with Perfil.jsx
-        localStorage.setItem("lokei_nome", dadosSalvos.nome);
-        localStorage.setItem("lokei_email", dadosSalvos.email);
-        localStorage.setItem("lokei_telefone", dadosSalvos.telefone);
+        localStorage.setItem("lokei_nome", nome);
+        localStorage.setItem("lokei_email", email);
+        localStorage.setItem("lokei_telefone", telefone);
 
         setModalAberto(true);
     } catch (error) {

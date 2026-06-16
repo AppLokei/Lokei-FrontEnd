@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import BarraNavegacao from "../components/NavigationBar";
-import { criarAnuncio } from "../services";
+import { criarAnuncio, buscarCategorias } from "../services";
 import "./Anunciar.css";
 
 const MAX_FOTOS = 5;
@@ -14,6 +14,7 @@ const TIPOS_PERMITIDOS = ["image/jpeg", "image/jpg", "image/png"];
 const Anunciar = () => {
   const [titulo, setTitulo] = useState("");
   const [categoria, setCategoria] = useState("");
+  const [categorias, setCategorias] = useState([]);
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
   const [fotos, setFotos] = useState([]);
@@ -21,6 +22,12 @@ const Anunciar = () => {
   const navigate = useNavigate();
 
   const podeAdicionarMais = fotos.length < MAX_FOTOS;
+
+  useEffect(() => {
+    buscarCategorias()
+      .then(setCategorias)
+      .catch(() => setCategorias([]));
+  }, []);
 
   const urlsPreview = useMemo(
     () =>
@@ -193,11 +200,11 @@ const Anunciar = () => {
                 className={erros.categoria ? "hasError" : ""}
               >
                 <option value="">Selecione</option>
-                <option value="FURADEIRAS_E_PARAFUSADEIRAS">Furadeiras e Parafusadeiras</option>
-                <option value="LIXADEIRAS">Lixadeiras</option>
-                <option value="SERRAS_E_MOTOSSERRAS">Serras e Motosserras</option>
-                <option value="MARTELOS">Marteletes e Martelos</option>
-                <option value="OUTROS">Outros</option>
+                {categorias.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.nome}
+                  </option>
+                ))}
               </select>
               {erros.categoria ? (
                 <span className="anunciarError">{erros.categoria}</span>

@@ -75,7 +75,7 @@ const Chat = () => {
           const outroUserId = c.locatarioId === usuarioId ? c.locadorId : c.locatarioId;
           let outroNome = `Usuário #${outroUserId}`;
           try {
-            const uRes = await fetch(`/api/usuarios/${outroUserId}`);
+            const uRes = await fetch(`/api/usuario/${outroUserId}`);
             if (uRes.ok) {
               const uData = await uRes.json();
               outroNome = uData.nome;

@@ -116,6 +116,7 @@ const Cadastro = () => {
         cpf: cpfDigitos,
         telefone,
         senha,
+        dataNascimento,
         cep,
         logradouro,
         numero,

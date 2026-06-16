@@ -5,20 +5,22 @@ import CampoEntrada from "../components/Input";
 import Botao from "../components/Button";
 import CardFerramenta from "../components/ToolCard";
 import BarraNavegacao from "../components/NavigationBar";
-import { listarAnuncios, mapearAnuncioParaCard } from "../services";
+import { listarAnuncios, mapearAnuncioParaCard, buscarCategorias } from "../services";
 import "./Home.css";
 
 
-const categorias = [
-  { id: "FURADEIRAS_E_PARAFUSADEIRAS", nome: "Furadeiras", icon: "⚡" },
-  { id: "LIXADEIRAS", nome: "Lixadeiras", icon: "🛠️" },
-  { id: "SERRAS_E_MOTOSSERRAS", nome: "Serras", icon: "🪚" },
-  { id: "MARTELOS", nome: "Martelos", icon: "🔨" },
-];
+const ICONES_CATEGORIA = {
+  FURADEIRAS_E_PARAFUSADEIRAS: "⚡",
+  LIXADEIRAS: "🛠️",
+  SERRAS_E_MOTOSSERRAS: "🪚",
+  MARTELOS: "🔨",
+};
+const ICONE_CATEGORIA_PADRAO = "🧰";
 
 const Home = () => {
   const navigate = useNavigate();
   const [ferramentas, setFerramentas] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [busca, setBusca] = useState("");
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState("");
@@ -56,6 +58,12 @@ const Home = () => {
     valorMin: "",
     valorMax: "",
   });
+
+  useEffect(() => {
+    buscarCategorias()
+      .then(setCategorias)
+      .catch(() => setCategorias([]));
+  }, []);
 
   /* Fecha dropdown ao clicar fora */
   useEffect(() => {
@@ -233,7 +241,7 @@ const Home = () => {
                 }}
               >
                 <span className="homeCategoryIcon" aria-hidden="true">
-                  {item.icon}
+                  {ICONES_CATEGORIA[item.id] ?? ICONE_CATEGORIA_PADRAO}
                 </span>
                 <span className="homeCategoryLabel">{item.nome}</span>
               </button>

@@ -4,5 +4,6 @@ export * from "./avaliacao";
 export * from "./denuncias";
 export * from "./auth";
 export * from "./usuarios";
+export * from "./categoriaService";
 export * from "./chat";
 export * from "./alugueis";
